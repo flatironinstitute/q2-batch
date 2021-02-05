@@ -42,5 +42,8 @@ setup(name='q2-batch',
       entry_points={
           'qiime2.plugins': ['q2-batch=q2_batch.plugin_setup:plugin']
       },
+      package_data={
+          "q2_batch": ['assets/batch_nb_single.stan'],
+      },
       classifiers=classifiers,
 )
