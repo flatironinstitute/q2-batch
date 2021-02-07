@@ -4,8 +4,8 @@ data {
   int<lower=0> B;    // number of batchs
   real depth[N];     // sequencing depths of microbes
   int y[N];          // observed microbe abundances
-  int<lower=0, upper=1> ref_ids[N];    // locations of reference replicates
-  int<lower=1, upper=R> batch_ids[N];  // batch ids
+  int<lower=0, upper=N> ref_ids[N];    // locations of reference replicates
+  int<lower=0, upper=N> batch_ids[N];  // batch ids
 }
 
 parameters {

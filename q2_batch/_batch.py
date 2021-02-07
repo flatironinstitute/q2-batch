@@ -34,7 +34,7 @@ def _batch_func(counts : np.array, replicates : np.array,
     code = os.path.join(os.path.dirname(__file__),
                         'assets/batch_nb_single.stan')
     model = os.path.join(os.path.dirname(__file__),
-                         'assets/batch_nb_model.pkl')
+                         'assets/batch_nb_single.pkl')
     if os.path.exists(model):
         sm = pickle.load(open(model, 'rb'))
     else:
@@ -46,8 +46,8 @@ def _batch_func(counts : np.array, replicates : np.array,
         'B' : max(batch_ids),
         'depth' : np.log(depth),
         'y' : counts.astype(np.int64),
-        'ref_ids' : list(ref_ids),
-        'batch_ids' : list(batch_ids)
+        'ref_ids' : list(ref_ids.astype(np.int64)),
+        'batch_ids' : list(batch_ids.astype(np.int64))
     }
     fit = sm.sampling(data=dat, iter=mc_samples, chains=4)
     res =  fit.extract(permuted=True)
