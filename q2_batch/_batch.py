@@ -35,19 +35,24 @@ def _batch_func(counts : np.array, replicates : np.array,
                         'assets/batch_nb_single.stan')
     model = os.path.join(os.path.dirname(__file__),
                          'assets/batch_nb_single.pkl')
-    if os.path.exists(model):
-        sm = pickle.load(open(model, 'rb'))
-    else:
-        code = open(code, 'r').read()
-        sm = pystan.StanModel(model_code=code)
+    #if os.path.exists(model):
+    #    sm = pickle.load(open(model, 'rb'))
+    #else:
+    code = open(code, 'r').read()
+    sm = pystan.StanModel(model_code=code)
+
+    batch_ids = batch_ids.astype(np.int64) + 1
+    ref_ids = ref_ids.astype(np.int64) + 1
+    print(ref_ids)
+    print(batch_ids)
     dat = {
         'N' : len(counts),
-        'R' : max(replicate_ids),
-        'B' : max(batch_ids),
+        'R' : int(max(replicate_ids) + 1),
+        'B' : int(max(batch_ids) + 1),
         'depth' : np.log(depth),
         'y' : counts.astype(np.int64),
-        'ref_ids' : list(ref_ids.astype(np.int64)),
-        'batch_ids' : list(batch_ids.astype(np.int64))
+        'ref_ids' : list(ref_ids),
+        'batch_ids' : list(batch_ids)
     }
     fit = sm.sampling(data=dat, iter=mc_samples, chains=4)
     res =  fit.extract(permuted=True)
