@@ -5,12 +5,13 @@ import pandas as pd
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 import pickle
-import pystan
 import os
 from skbio.stats.composition import ilr_inv
-import q2templates
 import matplotlib.pyplot as plt
 import pickle
+from cmdstanpy import CmdStanModel
+import tempfile
+import json
 
 
 def _batch_func(counts : np.array, replicates : np.array,
@@ -32,28 +33,27 @@ def _batch_func(counts : np.array, replicates : np.array,
     batch_ids = batch_encoder.transform(batches)
     # Actual stan modeling
     code = os.path.join(os.path.dirname(__file__),
-                        'assets/batch_nb_single.stan')
-    model = os.path.join(os.path.dirname(__file__),
-                         'assets/batch_nb_single.pkl')
-    #if os.path.exists(model):
-    #    sm = pickle.load(open(model, 'rb'))
-    #else:
-    code = open(code, 'r').read()
-    sm = pystan.StanModel(model_code=code)
-
+                        'assets/batch_pln_single.stan')
     batch_ids = batch_ids.astype(np.int64) + 1
     ref_ids = ref_ids.astype(np.int64) + 1
-    print(ref_ids)
-    print(batch_ids)
+    sm = CmdStanModel(stan_file=code)
     dat = {
         'N' : len(counts),
         'R' : int(max(replicate_ids) + 1),
         'B' : int(max(batch_ids) + 1),
-        'depth' : np.log(depth),
-        'y' : counts.astype(np.int64),
-        'ref_ids' : list(ref_ids),
-        'batch_ids' : list(batch_ids)
+        'depth' : list(map(int, np.log(depth))),
+        'y' : list(map(int, counts.astype(np.int64))),
+        'ref_ids' : list(map(int, ref_ids )),
+        'batch_ids' : list(map(int, batch_ids))
     }
+    with tempfile.TemporaryDirectory() as temp_dir_name:
+        data_path = os.path.join(temp_dir_name, 'data.json')
+        with open(data_path, 'w') as f:
+            json.dump(dat, f)
+        fit = sm.sample(data=data_path, iter_sampling=mc_samples, chains=4)
+        res =  fit.extract(permuted=True)
+        return res
+
     fit = sm.sampling(data=dat, iter=mc_samples, chains=4)
     res =  fit.extract(permuted=True)
     return res
