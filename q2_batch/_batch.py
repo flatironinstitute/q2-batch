@@ -16,7 +16,7 @@ import json
 
 def _batch_func(counts : np.array, replicates : np.array,
                 batches : np.array, depth : int,
-                mc_samples : int) -> dict:
+                mc_samples : int=1000) -> dict:
     replicate_encoder = LabelEncoder()
     replicate_encoder.fit(replicates)
     replicate_ids = replicate_encoder.transform(replicates)
@@ -50,17 +50,23 @@ def _batch_func(counts : np.array, replicates : np.array,
         data_path = os.path.join(temp_dir_name, 'data.json')
         with open(data_path, 'w') as f:
             json.dump(dat, f)
-        fit = sm.sample(data=data_path, iter_sampling=mc_samples, chains=4)
-        res =  fit.extract(permuted=True)
+        # see https://mattocci27.github.io/assets/poilog.html
+        # for recommended parameters for poisson log normal
+        fit = sm.sample(data=data_path, iter_sampling=mc_samples, chains=4,
+                        iter_warmup=mc_samples // 2,
+                        adapt_delta = 0.9, max_treedepth = 20)
+        fit.diagnose()
+        mu = fit.stan_variable('mu')
+        sigma = fit.stan_variable('sigma')
+        disp = fit.stan_variable('disp')
+        res = pd.concat((mu, sigma, disp), axis=1)
+        # TODO: this doesn't seem to work atm, but its fixed upstream
+        # res = fit.summary()
         return res
-
-    fit = sm.sampling(data=dat, iter=mc_samples, chains=4)
-    res =  fit.extract(permuted=True)
-    return res
 
 
 def _simulate(n=100, d=10, depth=50):
-    """ Simulate batch effects
+    """ Simulate batch effects from Multinomial distribution
 
     Parameters
     ----------
