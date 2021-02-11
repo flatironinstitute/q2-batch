@@ -124,7 +124,9 @@ def _simulate(n=100, d=10, depth=50):
     oids = [f'o{x}' for x in range(d)]
     sids = [f's{x}' for x in range(n)]
     table = pd.DataFrame(table, index=sids, columns=oids)
-    md = pd.DataFrame({'batch': batch_md, 'diff': diff_md,
-                       'reps': rep_md},
+    md = pd.DataFrame({'batch': batch_md.astype(np.int64).astype(np.str),
+                       'diff': diff_md.astype(np.int64).astype(np.str),
+                       'reps': rep_md.astype(np.int64).astype(np.str)},
                       index=sids)
+    md.index.name = 'sampleid'
     return table, md

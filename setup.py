@@ -37,7 +37,9 @@ setup(name='q2-batch',
           'xarray',
           'matplotlib',
           'q2-differential',
-          'pystan'
+          'cmdstanpy',
+          # 'dask_jobsqueue', # optional
+          # 'dask'
       ],
       entry_points={
           'qiime2.plugins': ['q2-batch=q2_batch.plugin_setup:plugin']

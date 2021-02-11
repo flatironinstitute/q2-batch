@@ -12,8 +12,8 @@ parameters {
   vector[B] batch;           // random effects for each batch
   vector[R] reference;       // reference replicates
   real mu;                   // mean of batch random effects
-  real<lower=0.0> sigma;   // variance of batch random effects
-  real<lower=0.0> disp;    // per microbe dispersion
+  real<lower=0.0> sigma;     // variance of batch random effects
+  real<lower=0.0> disp;      // per microbe dispersion
   vector[N] lam;
 }
 
