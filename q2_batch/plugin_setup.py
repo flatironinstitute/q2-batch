@@ -2,12 +2,14 @@ import importlib
 import qiime2.plugin
 import qiime2.sdk
 from qiime2.plugin import (Str, Properties, Int, Float,  Metadata, Bool,
-                           MetadataColumn, Categorical, Continuous)
+                           MetadataColumn, Categorical)
 
-from q2_fido import __version__
+from q2_batch import __version__
+from q2_batch._method import estimate
 from q2_differential._type import FeatureTensor
 from q2_differential._format import FeatureTensorNetCDFFormat, FeatureTensorNetCDFDirFmt
-from q2_fido._method import basset
+from q2_types.feature_table import FeatureTable, Frequency
+
 
 
 plugin = qiime2.plugin.Plugin(
@@ -21,18 +23,19 @@ plugin = qiime2.plugin.Plugin(
     package='q2-batch')
 
 plugin.methods.register_function(
-    function=dirichlet_multinomial,
-    inputs={'table': FeatureTable[Frequency]},
+    function=estimate,
+    inputs={'counts': FeatureTable[Frequency]},
     parameters={
         'batches': MetadataColumn[Categorical],
         'replicates': MetadataColumn[Categorical],
-        'monte_carlo_samples': Int
+        'monte_carlo_samples': Int,
+        'cores': Int
     },
     outputs=[
         ('posterior', FeatureTensor)
     ],
     input_descriptions={
-        "table": "Input table of counts.",
+        "counts": "Input table of counts.",
     },
     output_descriptions={
         'posterior': ('Output posterior distribution of batch effect'),
@@ -44,7 +47,7 @@ plugin.methods.register_function(
             'Number of monte carlo samples to draw from '
             'posterior distribution.'
         ),
-
+        'cores' : 'Number of cpu cores'
     },
     name='estimation',
     description=("Computes batch effects from technical replicates"),
