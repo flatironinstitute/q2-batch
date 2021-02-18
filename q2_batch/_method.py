@@ -24,8 +24,8 @@ def estimate(counts : pd.DataFrame,
     # TODO: need to speed this up with either joblib or something
     depth = counts.sum(axis=1)
     pfunc = lambda x: _batch_func(np.array(x.values), replicates, batches,
-                                  depth, mc_samples)
-    if cores > 0:
+                                  depth, monte_carlo_samples)
+    if cores > 1:
         try:
             import dask.dataframe as dd
             dcounts = dd.from_pandas(counts.T, npartitions=cores)
@@ -35,11 +35,11 @@ def estimate(counts : pd.DataFrame,
         except:
             data_df = list(counts.T.apply(pfunc, axis=1).values)
     else:
-        data_df = list(counts.apply(pfunc, axis=0).values)
+        data_df = list(counts.T.apply(pfunc, axis=1).values)
     samples = xr.concat([df.to_xarray() for df in data_df], dim="features")
     samples = samples.assign_coords(coords={
             'features' : counts.columns,
-            'monte_carlo_samples' : np.arange(mc_samples)
+            'monte_carlo_samples' : np.arange(monte_carlo_samples)
     })
     return samples
 
@@ -48,7 +48,7 @@ def estimate(counts : pd.DataFrame,
 def parallel_estimate(counts : pd.DataFrame,
                       replicate_column : qiime2.CategoricalMetadataColumn,
                       batch_column : qiime2.CategoricalMetadataColumn,
-                      mc_samples : int,
+                      monte_carlo_samples : int,
                       cores=16,
                       memory='16 GB',
                       processes=4):

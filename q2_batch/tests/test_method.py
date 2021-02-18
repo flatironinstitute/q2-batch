@@ -15,7 +15,7 @@ class TestBatchEstimation(unittest.TestCase):
             self.table,
             replicates=qiime2.CategoricalMetadataColumn(self.metadata['reps']),
             batches=qiime2.CategoricalMetadataColumn(self.metadata['batch']),
-            mc_samples=100,
+            monte_carlo_samples=100,
             cores=1
         )
         self.assertTrue(res is not None)
@@ -26,7 +26,7 @@ class TestBatchEstimation(unittest.TestCase):
             self.table,
             replicates=qiime2.CategoricalMetadataColumn(self.metadata['reps']),
             batches=qiime2.CategoricalMetadataColumn(self.metadata['batch']),
-            mc_samples=100,
+            monte_carlo_samples=100,
             cores=4
         )
         self.assertTrue(res is not None)
