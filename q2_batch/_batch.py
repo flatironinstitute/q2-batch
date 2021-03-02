@@ -22,7 +22,7 @@ def _batch_func(counts : np.array, replicates : np.array,
     replicate_ids = replicate_encoder.transform(replicates)
     # identify reference replicates - these will be the
     # first sample for each replicate group
-    ref_ids, lookup = np.zeros(len(counts)), {}
+    ref_ids, lookup = np.zeros(len(replicate_ids)), {}
     for i, c in enumerate(replicate_ids):
         if c not in lookup:
             lookup[c] = i
