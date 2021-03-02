@@ -38,8 +38,8 @@ def _batch_func(counts : np.array, replicates : np.array,
     ref_ids = ref_ids.astype(np.int64) + 1
     sm = CmdStanModel(stan_file=code)
     dat = {
-        'N' : len(counts),
-        'R' : int(max(replicate_ids) + 1),
+        'N' : counts.shape[0],
+        'R' : int(max(ref_ids) + 1),
         'B' : int(max(batch_ids) + 1),
         'depth' : list(map(int, np.log(depth))),
         'y' : list(map(int, counts.astype(np.int64))),
