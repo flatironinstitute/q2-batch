@@ -59,7 +59,10 @@ def _batch_func(counts : np.array, replicates : np.array,
         mu = fit.stan_variable('mu')
         sigma = fit.stan_variable('sigma')
         disp = fit.stan_variable('disp')
-        res = pd.concat((mu, sigma, disp), axis=1)
+        res = pd.DataFrame({
+            'mu': mu,
+            'sigma': sigma,
+            'disp': disp})
         # TODO: this doesn't seem to work atm, but its fixed upstream
         # res = fit.summary()
         return res

@@ -16,7 +16,7 @@ import qiime2
 def estimate(counts : pd.DataFrame,
              replicates : qiime2.CategoricalMetadataColumn,
              batches : qiime2.CategoricalMetadataColumn,
-             monte_carlo_samples : int,
+             monte_carlo_samples : int = 100,
              cores : int = 1) -> xr.Dataset:
     # match everything up
     replicates = replicates.to_series()
