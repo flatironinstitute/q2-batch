@@ -37,7 +37,7 @@ setup(name='q2-batch',
           'xarray',
           'matplotlib',
           'q2-differential',
-          'cmdstanpy',
+          'cmdstanpy==0.9.68',
           # 'dask_jobsqueue', # optional
           # 'dask'
       ],
