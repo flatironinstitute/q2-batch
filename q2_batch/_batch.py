@@ -51,11 +51,11 @@ def _batch_func(counts : np.array, replicates : np.array,
         with open(data_path, 'w') as f:
             json.dump(dat, f)
         # Obtain an initial guess with MLE
-        guess = sm.optimize(data=data_path, inits=0)
+        # guess = sm.optimize(data=data_path, inits=0)
         # see https://mattocci27.github.io/assets/poilog.html
         # for recommended parameters for poisson log normal
         fit = sm.sample(data=data_path, iter_sampling=mc_samples,
-                        inits=guess.optimized_params_dict,
+                        # inits=guess.optimized_params_dict,
                         chains=4, iter_warmup=mc_samples // 2,
                         adapt_delta = 0.9, max_treedepth = 20)
         fit.diagnose()
