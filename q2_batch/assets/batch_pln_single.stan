@@ -17,14 +17,8 @@ parameters {
   vector[N] lam;
 }
 
-transformed parameters {
-  vector[N] eta;
-  for (n in 1:N){
-    eta[n] = batch[batch_ids[n]] + reference[ref_ids[n]];
-  }
-}
-
 model {
+  vector[N] eta;
   // setting priors ...
   disp ~ normal(0., 5);            // weak overdispersion prior
   mu ~ normal(0., 10.);            // uninformed batch effects mean prior
@@ -33,7 +27,8 @@ model {
   reference ~ normal(0., 10.);     // uninformed reference prior
   // generating counts
   for (n in 1:N){
-    lam[n] ~ normal(eta[n], disp);
-    target += poisson_log_lpmf(y[n] | lam[n] + depth[n]);
+    eta[n] = batch[batch_ids[n]] + reference[ref_ids[n]];
   }
+  lam ~ normal(eta, disp);
+  y ~ poisson_log(lam + to_vector(depth));
 }
