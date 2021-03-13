@@ -41,7 +41,7 @@ def _batch_func(counts : np.array, replicates : np.array,
         'N' : len(counts),
         'R' : int(max(replicate_ids) + 1),
         'B' : int(max(batch_ids) + 1),
-        'depth' : list(map(int, np.log(depth))),
+        'depth' : list(np.log(depth)),
         'y' : list(map(int, counts.astype(np.int64))),
         'ref_ids' : list(map(int, ref_ids )),
         'batch_ids' : list(map(int, batch_ids))
@@ -50,10 +50,13 @@ def _batch_func(counts : np.array, replicates : np.array,
         data_path = os.path.join(temp_dir_name, 'data.json')
         with open(data_path, 'w') as f:
             json.dump(dat, f)
+        # Obtain an initial guess with MLE
+        guess = sm.optimize(data=data_path, inits=0)
         # see https://mattocci27.github.io/assets/poilog.html
         # for recommended parameters for poisson log normal
-        fit = sm.sample(data=data_path, iter_sampling=mc_samples, chains=4,
-                        iter_warmup=mc_samples // 2,
+        fit = sm.sample(data=data_path, iter_sampling=mc_samples,
+                        inits=guess.optimized_params_dict,
+                        chains=4, iter_warmup=mc_samples // 2,
                         adapt_delta = 0.9, max_treedepth = 20)
         fit.diagnose()
         mu = fit.stan_variable('mu')
