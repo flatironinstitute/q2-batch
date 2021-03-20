@@ -4,6 +4,7 @@ from q2_batch._batch import _simulate
 import qiime2
 import xarray as xr
 
+
 class TestBatchEstimation(unittest.TestCase):
 
     def setUp(self):

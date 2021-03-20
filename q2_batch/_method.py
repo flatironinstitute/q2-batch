@@ -18,10 +18,13 @@ def estimate(counts : pd.DataFrame,
              batches : qiime2.CategoricalMetadataColumn,
              monte_carlo_samples : int = 100,
              cores : int = 1) -> xr.Dataset:
-
-    replicates = replicates.to_series().values
-    batches = batches.to_series().values
-    # TODO: need to speed this up with either joblib or something
+    # match everything up
+    replicates = replicates.to_series()
+    batches = batches.to_series()
+    idx = list(set(counts.index) & set(replicates.index) & set(batches.index))
+    counts, replicates, batches = [x.loc[idx] for x in
+                                   (counts, replicates, batches)]
+    replicates, batches = replicates.values, batches.values
     depth = counts.sum(axis=1)
     pfunc = lambda x: _batch_func(np.array(x.values), replicates, batches,
                                   depth, monte_carlo_samples)
