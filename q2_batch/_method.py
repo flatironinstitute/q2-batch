@@ -48,14 +48,14 @@ def estimate(counts : pd.DataFrame,
 
 
 # Parallel estimation of batch effects
-def parallel_estimate(counts : pd.DataFrame,
-                      batches : qiime2.CategoricalMetadataColumn,
-                      replicates : qiime2.CategoricalMetadataColumn,
-                      monte_carlo_samples : int,
-                      cores=4,
-                      processes=4,
-                      memory='16 GB',
-                      walltime='01:00:00'):
+def slurm_estimate(counts : pd.DataFrame,
+                   batches : qiime2.CategoricalMetadataColumn,
+                   replicates : qiime2.CategoricalMetadataColumn,
+                   monte_carlo_samples : int,
+                   cores=4,
+                   processes=4,
+                   memory='16 GB',
+                   walltime='01:00:00'):
     from dask_jobqueue import SLURMCluster
     from distributed import Client
     import dask.dataframe as dd

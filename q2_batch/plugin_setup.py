@@ -5,11 +5,10 @@ from qiime2.plugin import (Str, Properties, Int, Float,  Metadata, Bool,
                            MetadataColumn, Categorical)
 
 from q2_batch import __version__
-from q2_batch._method import estimate
+from q2_batch._method import estimate, slurm_estimate
 from q2_differential._type import FeatureTensor
 from q2_differential._format import FeatureTensorNetCDFFormat, FeatureTensorNetCDFDirFmt
 from q2_types.feature_table import FeatureTable, Frequency
-
 
 
 plugin = qiime2.plugin.Plugin(
@@ -56,7 +55,7 @@ plugin.methods.register_function(
 
 
 plugin.methods.register_function(
-    function=parallel_estimate,
+    function=slurm_estimate,
     inputs={'counts': FeatureTable[Frequency]},
     parameters={
         'batches': MetadataColumn[Categorical],
