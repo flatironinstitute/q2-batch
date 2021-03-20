@@ -52,12 +52,13 @@ def slurm_estimate(counts : pd.DataFrame,
                    batches : qiime2.CategoricalMetadataColumn,
                    replicates : qiime2.CategoricalMetadataColumn,
                    monte_carlo_samples : int,
-                   cores=4,
-                   processes=4,
-                   memory='16 GB',
-                   walltime='01:00:00'):
+                   cores : int = 4,
+                   processes : int = 4,
+                   memory : str = '16 GB',
+                   walltime : str = '01:00:00',
+                   queue : str = '') -> xr.Dataset:
     from dask_jobqueue import SLURMCluster
-    from distributed import Client
+    from dask.distributed import Client
     import dask.dataframe as dd
 
     cluster = SLURMCluster(cores=cores,
@@ -66,7 +67,9 @@ def slurm_estimate(counts : pd.DataFrame,
                            project="batch",
                            walltime="01:00:00",
                            env_extra="export TBB_CXX_TYPE=gcc",
-                           queue="normal")
+                           queue=queue)
+    print(cluster.job_script())
+
     cluster.scale(jobs=processes)
     client = Client(cluster)
     # match everything up

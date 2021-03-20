@@ -64,7 +64,8 @@ plugin.methods.register_function(
         'cores': Int,
         'processes': Int,
         'memory': Str,
-        'walltime': Str
+        'walltime': Str,
+        'queue': Str
     },
     outputs=[
         ('posterior', FeatureTensor)
@@ -82,9 +83,13 @@ plugin.methods.register_function(
             'Number of monte carlo samples to draw from '
             'posterior distribution.'
         ),
-        'cores' : 'Number of cpu cores'
+        'cores' : 'Number of cpu cores per process',
+        'processes' : 'Number of processes',
+        'memory' : "Amount of memory per process (default: '16 GB'",
+        'walltime' : "Amount of time to spend on each worker (default : '1:00:00')",
+        'queue' : "Processing queue"
     },
-    name='estimation',
-    description=("Computes batch effects from technical replicates"),
+    name='parallel estimation',
+    description=("Computes batch effects from technical replicates on a slurm cluster"),
     citations=[]
 )
