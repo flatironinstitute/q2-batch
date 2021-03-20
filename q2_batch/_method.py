@@ -49,10 +49,45 @@ def estimate(counts : pd.DataFrame,
 
 # Parallel estimation of batch effects
 def parallel_estimate(counts : pd.DataFrame,
-                      replicate_column : qiime2.CategoricalMetadataColumn,
-                      batch_column : qiime2.CategoricalMetadataColumn,
+                      batches : qiime2.CategoricalMetadataColumn,
+                      replicates : qiime2.CategoricalMetadataColumn,
                       monte_carlo_samples : int,
-                      cores=16,
+                      cores=4,
+                      processes=4,
                       memory='16 GB',
-                      processes=4):
+                      walltime='01:00:00'):
     from dask_jobqueue import SLURMCluster
+    from distributed import Client
+    import dask.dataframe as dd
+
+    cluster = SLURMCluster(cores=cores,
+                           processes=processes,
+                           memory="16GB",
+                           project="batch",
+                           walltime="01:00:00",
+                           env_extra="export TBB_CXX_TYPE=gcc",
+                           queue="normal")
+    cluster.scale(jobs=processes)
+    client = Client(cluster)
+    # match everything up
+    replicates = replicates.to_series()
+    batches = batches.to_series()
+    idx = list(set(counts.index) & set(replicates.index) & set(batches.index))
+    counts, replicates, batches = [x.loc[idx] for x in
+                                   (counts, replicates, batches)]
+    replicates, batches = replicates.values, batches.values
+    depth = counts.sum(axis=1)
+    pfunc = lambda x: _batch_func(np.array(x.values), replicates, batches,
+                                  depth, monte_carlo_samples)
+
+    dcounts = dd.from_pandas(counts.T, npartitions=cores)
+    res = dcounts.apply(pfunc, axis=1)
+    resdf = res.compute(scheduler='processes')
+    data_df = list(resdf.values)
+
+    samples = xr.concat([df.to_xarray() for df in data_df], dim="features")
+    samples = samples.assign_coords(coords={
+            'features' : counts.columns,
+            'monte_carlo_samples' : np.arange(monte_carlo_samples)
+    })
+    return samples

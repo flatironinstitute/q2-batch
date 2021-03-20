@@ -53,3 +53,39 @@ plugin.methods.register_function(
     description=("Computes batch effects from technical replicates"),
     citations=[]
 )
+
+
+plugin.methods.register_function(
+    function=parallel_estimate,
+    inputs={'counts': FeatureTable[Frequency]},
+    parameters={
+        'batches': MetadataColumn[Categorical],
+        'replicates': MetadataColumn[Categorical],
+        'monte_carlo_samples': Int,
+        'cores': Int,
+        'processes': Int,
+        'memory': Str,
+        'walltime': Str
+    },
+    outputs=[
+        ('posterior', FeatureTensor)
+    ],
+    input_descriptions={
+        "counts": "Input table of counts.",
+    },
+    output_descriptions={
+        'posterior': ('Output posterior distribution of batch effect'),
+    },
+    parameter_descriptions={
+        'batches': ('Specifies the batch ids'),
+        'replicates': ('Specifies the technical replicates.'),
+        'monte_carlo_samples': (
+            'Number of monte carlo samples to draw from '
+            'posterior distribution.'
+        ),
+        'cores' : 'Number of cpu cores'
+    },
+    name='estimation',
+    description=("Computes batch effects from technical replicates"),
+    citations=[]
+)
