@@ -63,6 +63,7 @@ plugin.methods.register_function(
         'monte_carlo_samples': Int,
         'cores': Int,
         'processes': Int,
+        'nodes': Int,
         'memory': Str,
         'walltime': Str,
         'queue': Str
@@ -85,8 +86,9 @@ plugin.methods.register_function(
         ),
         'cores' : 'Number of cpu cores per process',
         'processes' : 'Number of processes',
-        'memory' : "Amount of memory per process (default: '16 GB'",
-        'walltime' : "Amount of time to spend on each worker (default : '1:00:00')",
+        'nodes' : 'Number of nodes',
+        'memory' : "Amount of memory per process (default: '16GB'",
+        'walltime' : "Amount of time to spend on each worker (default : '01:00:00')",
         'queue' : "Processing queue"
     },
     name='parallel estimation',

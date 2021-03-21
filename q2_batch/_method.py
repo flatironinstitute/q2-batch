@@ -54,24 +54,26 @@ def slurm_estimate(counts : pd.DataFrame,
                    monte_carlo_samples : int,
                    cores : int = 4,
                    processes : int = 4,
-                   memory : str = '16 GB',
+                   nodes : int = 2,
+                   memory : str = '16GB',
                    walltime : str = '01:00:00',
                    queue : str = '') -> xr.Dataset:
     from dask_jobqueue import SLURMCluster
     from dask.distributed import Client
     import dask.dataframe as dd
-
+    import logging
+    logging.basicConfig(format='%(levelname)s:%(message)s',
+                        level=logging.DEBUG)
     cluster = SLURMCluster(cores=cores,
                            processes=processes,
-                           memory="16GB",
-                           project="batch",
-                           walltime="01:00:00",
-                           env_extra="export TBB_CXX_TYPE=gcc",
+                           memory=memory,
+                           walltime=walltime,
+                           env_extra=["export TBB_CXX_TYPE=gcc"],
                            queue=queue)
+    cluster.scale(jobs=nodes)
     print(cluster.job_script())
-
-    cluster.scale(jobs=processes)
     client = Client(cluster)
+
     # match everything up
     replicates = replicates.to_series()
     batches = batches.to_series()
@@ -83,9 +85,12 @@ def slurm_estimate(counts : pd.DataFrame,
     pfunc = lambda x: _batch_func(np.array(x.values), replicates, batches,
                                   depth, monte_carlo_samples)
 
-    dcounts = dd.from_pandas(counts.T, npartitions=cores)
+    dcounts = dd.from_pandas(
+        counts.T, npartitions=(cores * nodes * processes * 4))
+
+    # dcounts = client.persist(dcounts)
     res = dcounts.apply(pfunc, axis=1)
-    resdf = res.compute(scheduler='processes')
+    resdf = client.compute(res)
     data_df = list(resdf.values)
 
     samples = xr.concat([df.to_xarray() for df in data_df], dim="features")
