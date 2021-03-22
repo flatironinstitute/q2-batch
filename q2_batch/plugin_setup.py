@@ -5,7 +5,7 @@ from qiime2.plugin import (Str, Properties, Int, Float,  Metadata, Bool,
                            MetadataColumn, Categorical)
 
 from q2_batch import __version__
-from q2_batch._method import estimate, slurm_estimate
+from q2_batch._method import estimate, slurm_estimate, parallel_estimate
 from q2_differential._type import FeatureTensor
 from q2_differential._format import FeatureTensorNetCDFFormat, FeatureTensorNetCDFDirFmt
 from q2_types.feature_table import FeatureTable, Frequency
@@ -91,7 +91,42 @@ plugin.methods.register_function(
         'walltime' : "Amount of time to spend on each worker (default : '01:00:00')",
         'queue' : "Processing queue"
     },
-    name='parallel estimation',
+    name='parallel estimation on slurm',
     description=("Computes batch effects from technical replicates on a slurm cluster"),
+    citations=[]
+)
+
+
+plugin.methods.register_function(
+    function=parallel_estimate,
+    inputs={'counts': FeatureTable[Frequency]},
+    parameters={
+        'batches': MetadataColumn[Categorical],
+        'replicates': MetadataColumn[Categorical],
+        'monte_carlo_samples': Int,
+        'scheduler_json': Str,
+        'partitions': Int,
+    },
+    outputs=[
+        ('posterior', FeatureTensor)
+    ],
+    input_descriptions={
+        "counts": "Input table of counts.",
+    },
+    output_descriptions={
+        'posterior': ('Output posterior distribution of batch effect'),
+    },
+    parameter_descriptions={
+        'batches': ('Specifies the batch ids'),
+        'replicates': ('Specifies the technical replicates.'),
+        'monte_carlo_samples': (
+            'Number of monte carlo samples to draw from '
+            'posterior distribution.'
+        ),
+        'scheduler_json' : 'Scheduler details in json format.',
+        'partitions' : 'Number of partitions to segment data.'
+    },
+    name='parallel estimation',
+    description=("Computes batch effects from technical replicates on a cluster"),
     citations=[]
 )

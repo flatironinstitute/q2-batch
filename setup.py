@@ -47,5 +47,6 @@ setup(name='q2-batch',
       package_data={
           "q2_batch": ['assets/batch_nb_single.stan'],
       },
+      scripts=glob('scripts/*'),
       classifiers=classifiers,
 )
