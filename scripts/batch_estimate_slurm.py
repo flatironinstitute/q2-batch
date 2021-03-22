@@ -79,16 +79,18 @@ depth = counts.sum(axis=1)
 pfunc = lambda x: _batch_func(x, replicates, batches,
                               depth, args.monte_carlo_samples, chains=1)
 dcounts = da.from_array(counts.values.T, chunks=(counts.T.shape))
+print('Dimensions', counts.shape, dcounts.shape, len(counts.columns))
+
 res = []
-for d in range(dcounts.shape[1]):
+for d in range(dcounts.shape[0]):
     r = dask.delayed(pfunc)(dcounts[d])
     res.append(r)
-
+print('Res length', len(res))
 futures = dask.persist(*res)
 resdf = dask.compute(futures)
 data_df = list(resdf[0])
 samples = xr.concat([df.to_xarray() for df in data_df], dim="features")
 samples = samples.assign_coords(coords={
-    'features' : counts.columns,
+    'features' : table.ids(axis='observation'),
     'monte_carlo_samples' : np.arange(args.monte_carlo_samples)})
 samples.to_netcdf(args.output_tensor)
