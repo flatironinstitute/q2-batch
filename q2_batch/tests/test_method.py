@@ -21,17 +21,6 @@ class TestBatchEstimation(unittest.TestCase):
         self.assertTrue(res is not None)
         self.assertTrue(isinstance(res, xr.Dataset))
 
-    def test_batch_dask(self):
-        res = estimate(
-            self.table,
-            replicates=qiime2.CategoricalMetadataColumn(self.metadata['reps']),
-            batches=qiime2.CategoricalMetadataColumn(self.metadata['batch']),
-            monte_carlo_samples=100,
-            cores=4
-        )
-        self.assertTrue(res is not None)
-        self.assertTrue(isinstance(res, xr.Dataset))
-
 
 if __name__ == '__main__':
     unittest.main()

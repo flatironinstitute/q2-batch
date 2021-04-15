@@ -21,8 +21,8 @@ model {
   vector[N] eta;
   // setting priors ...
   disp ~ normal(0., 5);            // weak overdispersion prior
-  mu ~ normal(0., 1.);             // uninformed batch effects mean prior
-  sigma ~ normal(0., 5);           // weak batch effects variance prior
+  mu ~ normal(0., 1.);             // strong batch effects mean prior
+  sigma ~ normal(0., 1.);          // strong batch effects variance prior
   batch ~ normal(mu, sigma);       // random effects
   reference ~ normal(0., 10.);     // uninformed reference prior
   // generating counts

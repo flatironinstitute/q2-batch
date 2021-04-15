@@ -16,7 +16,7 @@ import json
 
 def _batch_func(counts : np.array, replicates : np.array,
                 batches : np.array, depth : int,
-                mc_samples : int=1000) -> dict:
+                mc_samples : int=1000, chains=4) -> dict:
     replicate_encoder = LabelEncoder()
     replicate_encoder.fit(replicates)
     replicate_ids = replicate_encoder.transform(replicates)
@@ -56,7 +56,7 @@ def _batch_func(counts : np.array, replicates : np.array,
         # for recommended parameters for poisson log normal
         fit = sm.sample(data=data_path, iter_sampling=mc_samples,
                         # inits=guess.optimized_params_dict,
-                        chains=4, iter_warmup=mc_samples // 2,
+                        chains=chains, iter_warmup=mc_samples // 2,
                         adapt_delta = 0.9, max_treedepth = 20)
         fit.diagnose()
         mu = fit.stan_variable('mu')
