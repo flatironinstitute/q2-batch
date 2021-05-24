@@ -20,7 +20,7 @@ classes = """
 """
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
-description = ('QIIME2 plugin Quick and dirty batch effect correction')
+description = ('QIIME2 plugin quick and dirty batch effect correction')
 
 
 setup(name='q2-batch',
@@ -36,10 +36,10 @@ setup(name='q2-batch',
           'pandas',
           'xarray',
           'matplotlib',
-          'q2-differential',
+          'q2-types',
           'cmdstanpy==0.9.68',
+          'dask',
           # 'dask_jobsqueue', # optional
-          # 'dask'
       ],
       entry_points={
           'qiime2.plugins': ['q2-batch=q2_batch.plugin_setup:plugin']

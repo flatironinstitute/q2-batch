@@ -5,14 +5,12 @@ import pandas as pd
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 import pickle
-import pystan
 import dask
 from q2_batch._batch import _batch_func
 import xarray as xr
 import qiime2
 
 
-# slow estimator
 def estimate(counts : pd.DataFrame,
              replicates : qiime2.CategoricalMetadataColumn,
              batches : qiime2.CategoricalMetadataColumn,
@@ -44,12 +42,12 @@ def estimate(counts : pd.DataFrame,
     return samples
 
 
-# Parallel estimation of batch effects
 def parallel_estimate(counts : pd.DataFrame,
-                      replicate_column : qiime2.CategoricalMetadataColumn,
-                      batch_column : qiime2.CategoricalMetadataColumn,
-                      monte_carlo_samples : int,
-                      cores=16,
-                      memory='16 GB',
-                      processes=4):
-    from dask_jobqueue import SLURMCluster
+                      replicates : pd.Series,
+                      batches : pd.Series,
+                      monte_carlo_samples : int = 100,
+                      cores : int = 1) -> xr.Dataset:
+    pass
+
+def phylogenetic_impute():
+    pass

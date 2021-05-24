@@ -6,10 +6,8 @@ from qiime2.plugin import (Str, Properties, Int, Float,  Metadata, Bool,
 
 from q2_batch import __version__
 from q2_batch._method import estimate
-from q2_differential._type import FeatureTensor
-from q2_differential._format import FeatureTensorNetCDFFormat, FeatureTensorNetCDFDirFmt
+from q2_types.feature_data import MonteCarloTensor
 from q2_types.feature_table import FeatureTable, Frequency
-
 
 
 plugin = qiime2.plugin.Plugin(
@@ -22,6 +20,7 @@ plugin = qiime2.plugin.Plugin(
                  ' for downstream plugins'),
     package='q2-batch')
 
+
 plugin.methods.register_function(
     function=estimate,
     inputs={'counts': FeatureTable[Frequency]},
@@ -32,7 +31,7 @@ plugin.methods.register_function(
         'cores': Int
     },
     outputs=[
-        ('posterior', FeatureTensor)
+        ('posterior', MonteCarloTensor)
     ],
     input_descriptions={
         "counts": "Input table of counts.",
