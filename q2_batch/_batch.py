@@ -5,9 +5,11 @@ from sklearn.preprocessing import LabelEncoder
 import os
 from skbio.stats.composition import ilr_inv
 from cmdstanpy import CmdStanModel
+from dask.distributed import Client, LocalCluster
 from birdman import BaseModel
 import tempfile
 import json
+import time
 
 
 def _extract_replicates(replicates, batches):
@@ -145,7 +147,6 @@ class PoissonLogNormalBatch(BaseModel):
             'ref_ids': list(map(int, ref_ids)),
             'batch_ids': list(map(int, batch_ids))
         }
-        self.param_names = ["mu", "sigma", "disp", "batch", "reference"]
         param_dict = {
             "mu_scale": mu_scale,
             "sigma_scale": sigma_scale,
@@ -153,6 +154,41 @@ class PoissonLogNormalBatch(BaseModel):
             "reference_scale": reference_scale
         }
         self.add_parameters(param_dict)
+
+        self.specify_model(
+            params=["mu", "sigma", "disp", "batch", "reference"],
+            dims={
+                "beta": ["covariate", "feature"],
+                "phi": ["feature"],
+                "log_lhood": ["tbl_sample", "feature"],
+                "y_predict": ["tbl_sample", "feature"]
+            },
+            coords={
+                "feature": self.feature_names,
+                "tbl_sample": self.sample_names
+            },
+            include_observed_data=True,
+            posterior_predictive="y_predict",
+            log_likelihood="log_lhood"
+        )
+
+    def fit_model(self, cluster_type: str = 'local',
+                  sampler_args: dict = {},
+                  dask_args: dict = {},
+                  convert_to_inference: bool = False):
+        if cluster_type == 'local':
+            cluster = LocalCluster(**dask_args)
+            cluster.scale(dask_args['n_workers'])
+            client = Client(cluster)
+        elif cluster_type == 'slurm':
+            from dask_jobqueue import SLURMCluster
+            cluster = SLURMCluster(**dask_args)
+            cluster.scale(dask_args['n_workers'])
+            client = Client(cluster)
+            client.wait_for_workers(dask_args['n_workers'])
+            time.sleep(60)
+        super().fit_model(**sampler_args,
+                          convert_to_inference=convert_to_inference)
 
 
 def _simulate(n=100, d=10, depth=50):

@@ -1,6 +1,6 @@
 import unittest
 from q2_batch._batch import _batch_func, _simulate, PoissonLogNormalBatch
-
+import biom
 
 class TestBatch(unittest.TestCase):
 
@@ -18,18 +18,22 @@ class TestBatch(unittest.TestCase):
 
 class TestPoissonLogNormalBatch(TestBatch):
     def test_batch(self):
+        table = biom.Table(self.table.values.T,
+                           self.table.columns, self.table.index)
         pln = PoissonLogNormalBatch(
-            table=biom_table,
+            table=table,
             replicate_column="reps",
             batch_column="batch",
-            metadata=metadata,
+            metadata=self.metadata,
             num_warmup=1000,
             mu_scale=1,
             reference_scale=5,
             chains=1,
             seed=42)
         pln.compile_model()
-        pln.fit_model(jobs=4)
+        pln.fit_model(dask_args={'n_workers': 1, 'threads_per_worker': 1})
+        inf = pln.to_inference_object()
+        self.assertEqual(inf['posterior']['mu'].shape, (10, 1, 1000))
 
 
 if __name__ == '__main__':

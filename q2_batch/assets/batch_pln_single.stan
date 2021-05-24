@@ -42,9 +42,9 @@ generated quantities {
   vector[N] y_predict;
   vector[N] log_lhood;
   for (n in 1:N){
-    real eta = batch[batch_ids[n]] + reference[ref_ids[n]];
-    real lam = normal_rng(eta, disp)
-    y_predict[n] = poisson_log_rng(lam + depth[n]);
-    log_lhood[n] = poisson_log_lpmf(y[n] | lam + depth[n]);
+    real eta_ = batch[batch_ids[n]] + reference[ref_ids[n]];
+    real lam_ = normal_rng(eta_, disp);
+    y_predict[n] = poisson_log_rng(lam_ + depth[n]);
+    log_lhood[n] = poisson_log_lpmf(y[n] | lam_ + depth[n]);
   }
 }
