@@ -1,5 +1,6 @@
 import unittest
 from q2_batch._batch import _batch_func, _simulate, PoissonLogNormalBatch
+from dask.distributed import Client, LocalCluster
 import biom
 
 class TestBatch(unittest.TestCase):
@@ -31,7 +32,11 @@ class TestPoissonLogNormalBatch(TestBatch):
             chains=1,
             seed=42)
         pln.compile_model()
-        pln.fit_model(dask_args={'n_workers': 1, 'threads_per_worker': 1})
+        dask_args={'n_workers': 1, 'threads_per_worker': 1}
+        cluster = LocalCluster(**dask_args)
+        cluster.scale(dask_args['n_workers'])
+        client = Client(cluster)
+        pln.fit_model()
         inf = pln.to_inference_object()
         self.assertEqual(inf['posterior']['mu'].shape, (10, 1, 1000))
 

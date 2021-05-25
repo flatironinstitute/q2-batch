@@ -5,7 +5,6 @@ from sklearn.preprocessing import LabelEncoder
 import os
 from skbio.stats.composition import ilr_inv
 from cmdstanpy import CmdStanModel
-from dask.distributed import Client, LocalCluster
 from birdman import BaseModel
 import tempfile
 import json
@@ -171,24 +170,6 @@ class PoissonLogNormalBatch(BaseModel):
             posterior_predictive="y_predict",
             log_likelihood="log_lhood"
         )
-
-    def fit_model(self, cluster_type: str = 'local',
-                  sampler_args: dict = {},
-                  dask_args: dict = {},
-                  convert_to_inference: bool = False):
-        if cluster_type == 'local':
-            cluster = LocalCluster(**dask_args)
-            cluster.scale(dask_args['n_workers'])
-            client = Client(cluster)
-        elif cluster_type == 'slurm':
-            from dask_jobqueue import SLURMCluster
-            cluster = SLURMCluster(**dask_args)
-            cluster.scale(dask_args['n_workers'])
-            client = Client(cluster)
-            client.wait_for_workers(dask_args['n_workers'])
-            time.sleep(60)
-        super().fit_model(**sampler_args,
-                          convert_to_inference=convert_to_inference)
 
 
 def _simulate(n=100, d=10, depth=50):
