@@ -48,7 +48,7 @@ plugin.methods.register_function(
         ),
         'cores' : 'Number of cpu cores'
     },
-    name='estimation',
-    description=("Computes batch effects from technical replicates"),
+    name='Batch effect estimation',
+    description=("Computes batch effects from technical replicates."),
     citations=[]
 )
