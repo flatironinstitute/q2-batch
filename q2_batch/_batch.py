@@ -5,7 +5,6 @@ from sklearn.preprocessing import LabelEncoder
 import os
 from skbio.stats.composition import ilr_inv
 from cmdstanpy import CmdStanModel
-from dask.distributed import Client, LocalCluster
 from birdman import BaseModel
 import tempfile
 import json
