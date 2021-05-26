@@ -38,7 +38,6 @@ def estimate(counts : biom.Table,
              batches : qiime2.CategoricalMetadataColumn,
              monte_carlo_samples : int = 100,
              cores : int = 1) -> xr.Dataset:
-
     replicates = replicates.to_series()
     batches = batches.to_series()
     # Build me a cluster!

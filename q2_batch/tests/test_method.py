@@ -27,6 +27,5 @@ class TestBatchEstimation(unittest.TestCase):
         self.assertGreater(res['r2'], 0.3)
 
 
-
 if __name__ == '__main__':
     unittest.main()
