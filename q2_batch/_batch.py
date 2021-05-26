@@ -33,50 +33,6 @@ def _extract_replicates(replicates, batches):
     return ref_ids, replicate_ids, batch_ids
 
 
-def _batch_func(counts: np.array, replicates: np.array,
-                batches: np.array, depth: int,
-                mc_samples: int = 1000) -> dict:
-
-    ref_ids, replicate_ids, batch_ids = _extract_replicates(
-        replicates, batches)
-    # Actual stan modeling
-    code = os.path.join(os.path.dirname(__file__),
-                        'assets/batch_pln_single.stan')
-    sm = CmdStanModel(stan_file=code)
-    dat = {
-        'N': len(counts),
-        'R': int(max(replicate_ids) + 1),
-        'B': int(max(batch_ids) + 1),
-        'depth': list(np.log(depth)),
-        'y': list(map(int, counts.astype(np.int64))),
-        'ref_ids': list(map(int, ref_ids)),
-        'batch_ids': list(map(int, batch_ids))
-    }
-    with tempfile.TemporaryDirectory() as temp_dir_name:
-        data_path = os.path.join(temp_dir_name, 'data.json')
-        with open(data_path, 'w') as f:
-            json.dump(dat, f)
-        # Obtain an initial guess with MLE
-        # guess = sm.optimize(data=data_path, inits=0)
-        # see https://mattocci27.github.io/assets/poilog.html
-        # for recommended parameters for poisson log normal
-        fit = sm.sample(data=data_path, iter_sampling=mc_samples,
-                        # inits=guess.optimized_params_dict,
-                        chains=4, iter_warmup=mc_samples // 2,
-                        adapt_delta=0.9, max_treedepth=20)
-        fit.diagnose()
-        mu = fit.stan_variable('mu')
-        sigma = fit.stan_variable('sigma')
-        disp = fit.stan_variable('disp')
-        res = pd.DataFrame({
-            'mu': mu,
-            'sigma': sigma,
-            'disp': disp})
-        # TODO: this doesn't seem to work atm, but its fixed upstream
-        # res = fit.summary()
-        return res
-
-
 class PoissonLogNormalBatch(BaseModel):
     """Fit Batch effects estimator with Poisson Log Normal
 
@@ -107,7 +63,14 @@ class PoissonLogNormalBatch(BaseModel):
     disp_scale : float
         Standard deviation for prior distribution for disp
     reference_scale : float
-        Standard deviation for prior distribution for reference
+        Mean for prior distribution for reference samples
+    reference_scale : float
+        Standard deviation for prior distribution for reference samples
+
+    Notes
+    -----
+    The priors for the reference are defaults for amplicon sequences
+    See https://github.com/mortonjt/q2-matchmaker/issues/24
     """
     def __init__(self,
                  table: biom.table.Table,
@@ -123,7 +86,8 @@ class PoissonLogNormalBatch(BaseModel):
                  mu_scale: float = 1,
                  sigma_scale: float = 1,
                  disp_scale: float = 1,
-                 reference_scale: float = 10):
+                 reference_loc: float = -5,
+                 reference_scale: float = 3):
         model_path = os.path.join(os.path.dirname(__file__),
                                   'assets/batch_pln_single.stan')
         super(PoissonLogNormalBatch, self).__init__(
@@ -151,6 +115,7 @@ class PoissonLogNormalBatch(BaseModel):
             "mu_scale": mu_scale,
             "sigma_scale": sigma_scale,
             "disp_scale": disp_scale,
+            "reference_loc": reference_loc,
             "reference_scale": reference_scale
         }
         self.add_parameters(param_dict)
@@ -171,24 +136,6 @@ class PoissonLogNormalBatch(BaseModel):
             posterior_predictive="y_predict",
             log_likelihood="log_lhood"
         )
-
-    def fit_model(self, cluster_type: str = 'local',
-                  sampler_args: dict = {},
-                  dask_args: dict = {},
-                  convert_to_inference: bool = False):
-        if cluster_type == 'local':
-            cluster = LocalCluster(**dask_args)
-            cluster.scale(dask_args['n_workers'])
-            client = Client(cluster)
-        elif cluster_type == 'slurm':
-            from dask_jobqueue import SLURMCluster
-            cluster = SLURMCluster(**dask_args)
-            cluster.scale(dask_args['n_workers'])
-            client = Client(cluster)
-            client.wait_for_workers(dask_args['n_workers'])
-            time.sleep(60)
-        super().fit_model(**sampler_args,
-                          convert_to_inference=convert_to_inference)
 
 
 def _simulate(n=100, d=10, depth=50):

@@ -10,6 +10,7 @@ data {
   real mu_scale;
   real sigma_scale;
   real disp_scale;
+  real reference_loc;
   real reference_scale;
 }
 
@@ -29,7 +30,8 @@ model {
   mu ~ normal(0., mu_scale);                // uninformed batch effects mean prior
   sigma ~ normal(0., sigma_scale);          // weak batch effects variance prior
   batch ~ normal(mu, sigma);                // random effects
-  reference ~ normal(0., reference_scale);  // uninformed reference prior
+  // uninformed reference prior
+  reference ~ normal(reference_loc, reference_scale);
   // generating counts
   for (n in 1:N){
     eta[n] = batch[batch_ids[n]] + reference[ref_ids[n]];
