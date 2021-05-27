@@ -4,6 +4,7 @@ from dask.distributed import Client
 from biom import load_table
 import pandas as pd
 from q2_batch._method import _poisson_log_normal_estimate
+from gneiss.util import match
 import time
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
@@ -20,6 +21,9 @@ parser.add_argument(
 parser.add_argument(
     '--monte-carlo-samples', help='Number of monte carlo samples.',
     type=int, required=False, default=1000)
+parser.add_argument(
+    '--chains', help='Number of monte carlo chains.', type=int,
+    required=False, default=1)
 parser.add_argument(
     '--cores', help='Number of cores per process.', type=int,
     required=False, default=1)
@@ -40,6 +44,9 @@ parser.add_argument(
     required=False, default='eth0')
 parser.add_argument(
     '--queue', help='Queue to submit job to.', type=str, required=True)
+parser.add_argument(
+    '--local-directory', help='Scratch directory to deposit dask logs.',
+    type=str, required=False, default='/scratch')
 parser.add_argument(
     '--output-tensor', help='Output tensor.', type=str, required=True)
 
@@ -68,6 +75,7 @@ print(cluster.scheduler.workers)
 
 table = load_table(args.biom_table)
 metadata = pd.read_table(args.metadata_file, index_col=0)
+table, metadata = match(table, metadata)
 replicates = metadata[args.replicates]
 batches = metadata[args.batches]
 
@@ -75,8 +83,6 @@ samples = _poisson_log_normal_estimate(
     table,
     replicates,
     batches,
-    cores=args.cores,
-    num_iter=args.monte_carlo_samples,
     mu_scale=1,
     sigma_scale=1,
     disp_scale=1,

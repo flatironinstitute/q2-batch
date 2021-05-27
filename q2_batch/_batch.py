@@ -99,7 +99,7 @@ class PoissonLogNormalBatch(BaseModel):
         self.dat = {
             'D': table.shape[0],                 # number of features
             'N': table.shape[1],                 # number of samples
-            'R': int(max(replicate_ids) + 1),
+            'R': int(max(ref_ids) + 1),
             'B': int(max(batch_ids) + 1),
             'depth': list(np.log(depth)),
             "y": table.matrix_data.todense().T.astype(int),
