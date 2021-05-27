@@ -2,7 +2,6 @@ import unittest
 from q2_batch._method import estimate
 from q2_batch._batch import _simulate
 import qiime2
-import xarray as xr
 from birdman.diagnostics import r2_score
 
 
