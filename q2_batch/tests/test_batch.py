@@ -1,9 +1,5 @@
 import unittest
-<<<<<<< HEAD
 from q2_batch._batch import _simulate, PoissonLogNormalBatch
-=======
-from q2_batch._batch import _batch_func, _simulate, PoissonLogNormalBatch
->>>>>>> 483812bb6c590b85f3e236ee32b38d2f4eb77417
 from dask.distributed import Client, LocalCluster
 import biom
 
