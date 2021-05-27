@@ -4,11 +4,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import os
 from skbio.stats.composition import ilr_inv
-from cmdstanpy import CmdStanModel
 from birdman import BaseModel
-import tempfile
-import json
-import time
 
 
 def _extract_replicates(replicates, batches):
