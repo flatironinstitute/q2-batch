@@ -4,11 +4,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import os
 from skbio.stats.composition import ilr_inv
-from cmdstanpy import CmdStanModel
 from birdman import BaseModel
-import tempfile
-import json
-import time
 
 
 def _extract_replicates(replicates, batches):
@@ -103,7 +99,7 @@ class PoissonLogNormalBatch(BaseModel):
         self.dat = {
             'D': table.shape[0],                 # number of features
             'N': table.shape[1],                 # number of samples
-            'R': int(max(replicate_ids) + 1),
+            'R': int(max(ref_ids) + 1),
             'B': int(max(batch_ids) + 1),
             'depth': list(np.log(depth)),
             "y": table.matrix_data.todense().T.astype(int),
