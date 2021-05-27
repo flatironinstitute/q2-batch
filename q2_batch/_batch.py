@@ -11,13 +11,7 @@ import json
 import time
 
 
-<<<<<<< HEAD
 def _extract_replicates(replicates, batches):
-=======
-def _batch_func(counts : np.array, replicates : np.array,
-                batches : np.array, depth : int,
-                mc_samples : int=1000, chains=4) -> dict:
->>>>>>> 161e1d4b899815d62d3a640467f68f46e8621004
     replicate_encoder = LabelEncoder()
     replicate_encoder.fit(replicates)
     replicate_ids = replicate_encoder.transform(replicates)
