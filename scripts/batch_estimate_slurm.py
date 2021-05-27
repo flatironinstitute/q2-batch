@@ -1,15 +1,9 @@
-import qiime2
 import argparse
 from dask_jobqueue import SLURMCluster
 from dask.distributed import Client
-import dask
-import dask.dataframe as dd
-import dask.array as da
 from biom import load_table
 import pandas as pd
-import numpy as np
-import xarray as xr
-from q2_batch._batch import _batch_func
+from q2_batch._method import _poisson_log_normal_estimate
 import time
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
@@ -81,8 +75,8 @@ samples = _poisson_log_normal_estimate(
     table,
     replicates,
     batches,
-    monte_carlo_samples,
-    cores,
+    cores=args.cores,
+    num_iter=args.monte_carlo_samples,
     mu_scale=1,
     sigma_scale=1,
     disp_scale=1,

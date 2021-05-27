@@ -27,7 +27,6 @@ plugin.methods.register_function(
     parameters={
         'batches': MetadataColumn[Categorical],
         'replicates': MetadataColumn[Categorical],
-        'monte_carlo_samples': Int,
         'cores': Int
     },
     outputs=[
@@ -42,10 +41,6 @@ plugin.methods.register_function(
     parameter_descriptions={
         'batches': ('Specifies the batch ids'),
         'replicates': ('Specifies the technical replicates.'),
-        'monte_carlo_samples': (
-            'Number of monte carlo samples to draw from '
-            'posterior distribution.'
-        ),
         'cores' : 'Number of cpu cores'
     },
     name='Batch effect estimation',
