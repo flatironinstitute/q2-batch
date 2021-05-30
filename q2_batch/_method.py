@@ -10,6 +10,7 @@ import qiime2
 def _poisson_log_normal_estimate(table,
                                  replicates,
                                  batches,
+                                 chunksize=50,
                                  **sampler_args):
     metadata = pd.DataFrame({'batch': batches, 'reps': replicates})
     table, metadata = match(table, metadata)
@@ -20,7 +21,7 @@ def _poisson_log_normal_estimate(table,
         metadata=metadata,
         **sampler_args)
     pln.compile_model()
-    pln.fit_model()
+    pln.fit_model(chunksize=chunksize, convert_to_inference=True)
     samples = pln.to_inference_object()
     return samples
 
@@ -35,7 +36,7 @@ def estimate(counts: biom.Table,
     dask_args = {'n_workers': cores, 'threads_per_worker': 1}
     cluster = LocalCluster(**dask_args)
     cluster.scale(dask_args['n_workers'])
-    Client(cluster)
+    client = Client(cluster)
     samples = _poisson_log_normal_estimate(
         counts, replicates, batches)
     return samples
