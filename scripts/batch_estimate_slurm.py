@@ -9,6 +9,7 @@ import time
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--biom-table', help='Biom table of counts.', required=True)
@@ -24,6 +25,9 @@ parser.add_argument(
 parser.add_argument(
     '--chains', help='Number of monte carlo chains.', type=int,
     required=False, default=1)
+parser.add_argument(
+    '--chunksize', help='Number species to analyze within a process.',
+    type=int, required=False, default=100)
 parser.add_argument(
     '--cores', help='Number of cores per process.', type=int,
     required=False, default=1)
@@ -68,9 +72,9 @@ cluster = SLURMCluster(cores=args.cores,
 print(cluster.job_script())
 cluster.scale(jobs=args.nodes)
 client = Client(cluster)
-print(client)
 client.wait_for_workers(args.nodes)
 time.sleep(60)
+print(client)
 print(cluster.scheduler.workers)
 
 table = load_table(args.biom_table)
@@ -89,7 +93,8 @@ samples = _poisson_log_normal_estimate(
     reference_loc=-5,
     reference_scale=3,
     num_iter=args.monte_carlo_samples,
-    chains=args.chains
+    chains=args.chains,
+    chunksize=args.chunksize
 )
 
 samples.to_netcdf(args.output_tensor)
