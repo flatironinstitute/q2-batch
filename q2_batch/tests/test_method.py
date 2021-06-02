@@ -9,7 +9,7 @@ import biom
 class TestBatchEstimation(unittest.TestCase):
 
     def setUp(self):
-        self.table, self.metadata = _simulate(n=50, d=4, depth=30)
+        self.table, self.metadata = _simulate(n=50, d=1000, depth=30)
         self.table = biom.Table(self.table.values.T,
                                 list(self.table.columns),
                                 list(self.table.index))
@@ -19,7 +19,6 @@ class TestBatchEstimation(unittest.TestCase):
             self.table,
             replicates=qiime2.CategoricalMetadataColumn(self.metadata['reps']),
             batches=qiime2.CategoricalMetadataColumn(self.metadata['batch']),
-            monte_carlo_samples=100,
             cores=1
         )
         self.assertTrue(inf is not None)

@@ -7,10 +7,10 @@ import biom
 class TestPoissonLogNormalBatch(unittest.TestCase):
 
     def setUp(self):
-        self.table, self.metadata = _simulate(n=100, d=10, depth=50)
+        self.table, self.metadata = _simulate(n=100, d=6, depth=50)
 
     def test_batch(self):
-        dask_args = {'n_workers': 1, 'threads_per_worker': 1}
+        dask_args = {'n_workers': 3, 'threads_per_worker': 1}
         cluster = LocalCluster(**dask_args)
         cluster.scale(dask_args['n_workers'])
         Client(cluster)
@@ -27,7 +27,7 @@ class TestPoissonLogNormalBatch(unittest.TestCase):
             chains=1,
             seed=42)
         pln.compile_model()
-        pln.fit_model()
+        pln.fit_model(chunksize=2, convert_to_inference=True)
         inf = pln.to_inference_object()
         self.assertEqual(inf['posterior']['mu'].shape, (10, 1, 1000))
 

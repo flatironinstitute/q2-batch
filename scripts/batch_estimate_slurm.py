@@ -1,4 +1,6 @@
 import argparse
+import dask
+import distributed
 from dask_jobqueue import SLURMCluster
 from dask.distributed import Client
 from biom import load_table
@@ -47,6 +49,9 @@ parser.add_argument(
     '--interface', help='Interface for communication', type=str,
     required=False, default='eth0')
 parser.add_argument(
+    '--job-extra', help='Comma delimited list of additional slurm arguments.',
+    type=str, required=False, default='--constraint=rome')
+parser.add_argument(
     '--queue', help='Queue to submit job to.', type=str, required=True)
 parser.add_argument(
     '--local-directory', help='Scratch directory to deposit dask logs.',
@@ -64,10 +69,11 @@ cluster = SLURMCluster(cores=args.cores,
                        walltime=args.walltime,
                        interface=args.interface,
                        nanny=True,
-                       death_timeout='300s',
+                       death_timeout='600s',
                        local_directory=args.local_directory,
                        shebang='#!/usr/bin/env bash',
                        env_extra=["export TBB_CXX_TYPE=gcc"],
+                       job_extra=args.job_extra.split(','),
                        queue=args.queue)
 print(cluster.job_script())
 cluster.scale(jobs=args.nodes)
@@ -91,7 +97,7 @@ samples = _poisson_log_normal_estimate(
     sigma_scale=1,
     disp_scale=1,
     reference_loc=-5,
-    reference_scale=3,
+    reference_scale=5,
     num_iter=args.monte_carlo_samples,
     chains=args.chains,
     chunksize=args.chunksize
