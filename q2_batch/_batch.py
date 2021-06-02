@@ -14,9 +14,49 @@ import tempfile
 import json
 
 
+def merge_inferences(inf_list, log_likelihood, posterior_predictive,
+                     coords, concatenation_name='features'):
+    group_list = []
+    group_list.append(dask.persist(*[x.posterior for x in inf_list]))
+    group_list.append(dask.persist(*[x.sample_stats for x in inf_list]))
+    if log_likelihood is not None:
+        group_list.append(dask.persist(*[x.log_likelihood for x in inf_list]))
+    if posterior_predictive is not None:
+        group_list.append(
+            dask.persist(*[x.posterior_predictive for x in inf_list])
+        )
+
+    group_list = dask.compute(*group_list)
+    po_ds = xr.concat(group_list[0], concatenation_name)
+    ss_ds = xr.concat(group_list[1], concatenation_name)
+    group_dict = {"posterior": po_ds, "sample_stats": ss_ds}
+
+    if log_likelihood is not None:
+        ll_ds = xr.concat(group_list[2], concatenation_name)
+        group_dict["log_likelihood"] = ll_ds
+    if posterior_predictive is not None:
+        pp_ds = xr.concat(group_list[3], concatenation_name)
+        group_dict["posterior_predictive"] = pp_ds
+
+    all_group_inferences = []
+    for group in group_dict:
+        # Set concatenation dim coords
+        group_ds = group_dict[group].assign_coords(
+            {concatenation_name: coords[concatenation_name]}
+        )
+
+        group_inf = az.InferenceData(**{group: group_ds})  # hacky
+        all_group_inferences.append(group_inf)
+
+    return az.concat(*all_group_inferences)
+
+
 def _batch_func(counts : np.array, replicates : np.array,
                 batches : np.array, depth : int,
-                mc_samples : int=1000, chains=4) -> dict:
+                mc_samples : int=1000, chains : int=4,
+                mu_scale : float=10,
+                reference_loc : float=0,
+                reference_scale : float=10) -> dict:
     replicate_encoder = LabelEncoder()
     replicate_encoder.fit(replicates)
     replicate_ids = replicate_encoder.transform(replicates)
@@ -45,6 +85,11 @@ def _batch_func(counts : np.array, replicates : np.array,
         'y' : list(map(int, counts.astype(np.int64))),
         'ref_ids' : list(map(int, ref_ids )),
         'batch_ids' : list(map(int, batch_ids))
+        'mu_scale' : mu_scale,
+        'sigma_scale' : 1,
+        'disp_scale' : 1
+        'reference_loc' : reference_loc,
+        'reference_scale' : reference_scale
     }
     with tempfile.TemporaryDirectory() as temp_dir_name:
         data_path = os.path.join(temp_dir_name, 'data.json')
