@@ -83,11 +83,11 @@ def _batch_func(counts : np.array, replicates : np.array,
         'B' : int(max(batch_ids) + 1),
         'depth' : list(np.log(depth)),
         'y' : list(map(int, counts.astype(np.int64))),
-        'ref_ids' : list(map(int, ref_ids )),
-        'batch_ids' : list(map(int, batch_ids))
+        'ref_ids' : list(map(int, ref_ids)),
+        'batch_ids' : list(map(int, batch_ids)),
         'mu_scale' : mu_scale,
         'sigma_scale' : 1,
-        'disp_scale' : 1
+        'disp_scale' : 1,
         'reference_loc' : reference_loc,
         'reference_scale' : reference_scale
     }

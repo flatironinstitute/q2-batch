@@ -8,6 +8,8 @@ class TestBatch(unittest.TestCase):
         self.table, self.metadata = _simulate(n=100, d=10, depth=50)
 
     def test_batch(self):
+        print(self.table.values[:, 0])
+        print(self.metadata)
         res = _batch_func(self.table.values[:, 0],
                           replicates=self.metadata['reps'].values,
                           batches=self.metadata['batch'].values,

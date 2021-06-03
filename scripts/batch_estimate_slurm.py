@@ -50,19 +50,22 @@ if __name__ == '__main__':
     parser.add_argument(
         '--walltime', help='Walltime.', type=str, required=False, default='01:00:00')
     parser.add_argument(
-        '--interface', help='Interface for communication', type=str, required=False, default='eth0')
+        '--interface', help='Interface for communication', type=str,
+        required=False, default='eth0')
     parser.add_argument(
         '--job-extra', help='Comma delimited list of extra job arguments.',
         type=str, required=False, default='--constraint=rome')
     parser.add_argument(
         '--queue', help='Queue to submit job to.', type=str, required=True)
     parser.add_argument(
+        '--local-directory', help='Scratch directory to deposit dask logs.',
+        type=str, required=False, default='/scratch')
+    parser.add_argument(
         '--output-tensor', help='Output tensor.', type=str, required=True)
 
     args = parser.parse_args()
     dask.config.set({'admin.tick.limit': '1h'})
     dask.config.set({"distributed.comm.timeouts.tcp": "300s"})
-
     cluster = SLURMCluster(cores=args.cores,
                            processes=args.processes,
                            memory=args.memory,
@@ -70,7 +73,7 @@ if __name__ == '__main__':
                            interface=args.interface,
                            nanny=True,
                            death_timeout='600s',
-                           local_directory='/scratch',
+                           local_directory=args.local_directory,
                            shebang='#!/usr/bin/env bash',
                            env_extra=["export TBB_CXX_TYPE=gcc"],
                            job_extra=args.job_extra.split(','),
@@ -105,7 +108,7 @@ if __name__ == '__main__':
 
     pfunc = lambda x: _batch_func(x, replicates, batches,
                                   depth, args.monte_carlo_samples,
-                                  chains=arg.chains,
+                                  chains=args.chains,
                                   mu_scale=args.mu_scale,
                                   reference_loc=reference_loc,
                                   reference_scale=args.reference_scale)
