@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 import pickle
 from cmdstanpy import CmdStanModel
 import tempfile
+import dask
+import xarray as xr
+import arviz as az
 import json
 
 
@@ -104,16 +107,11 @@ def _batch_func(counts : np.array, replicates : np.array,
                         chains=chains, iter_warmup=mc_samples // 2,
                         adapt_delta = 0.9, max_treedepth = 20)
         fit.diagnose()
-        mu = fit.stan_variable('mu')
-        sigma = fit.stan_variable('sigma')
-        disp = fit.stan_variable('disp')
-        res = pd.DataFrame({
-            'mu': mu,
-            'sigma': sigma,
-            'disp': disp})
-        # TODO: this doesn't seem to work atm, but its fixed upstream
-        # res = fit.summary()
-        return res
+        inf = az.from_cmdstanpy(fit,
+                                posterior_predictive='y_predict',
+                                log_likelihood='log_lhood',
+        )
+        return inf
 
 
 def _simulate(n=100, d=10, depth=50):

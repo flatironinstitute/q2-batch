@@ -15,7 +15,7 @@ class TestBatch(unittest.TestCase):
                           batches=self.metadata['batch'].values,
                           depth=self.table.sum(axis=1),
                           mc_samples=2000)
-        self.assertEqual(res.shape, (2000 * 4, 3))
+        self.assertEqual(res.posterior['mu'].values.shape, (2000 * 4, 3))
 
 
 if __name__ == '__main__':
