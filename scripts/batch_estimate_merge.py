@@ -9,6 +9,7 @@ from biom import load_table
 import pandas as pd
 import numpy as np
 import xarray as xr
+import arviz as az
 from q2_batch._batch import _batch_func, merge_inferences
 import time
 import logging

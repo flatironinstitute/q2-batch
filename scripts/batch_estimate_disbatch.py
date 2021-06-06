@@ -46,7 +46,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--job-extra',
         help=('Additional job arguments, like loading modules.'),
-        type=str, required=False)
+        type=str, required=False, default='')
     parser.add_argument(
         '--output-inference', help='Output inference tensor.',
         type=str, required=True)
@@ -99,7 +99,12 @@ if __name__ == '__main__':
         cmd = f'{args.job_extra}; {cmd}'
         slurm_env = os.environ.copy()
         print(cmd)
-        subprocess.run(cmd, env=slurm_env, check=True, shell=True)
+        try:
+            output = subprocess.run(cmd, env=slurm_env, check=True, shell=True)
+        except subprocess.CalledProcessError as exc:
+            print("Status : FAIL", exc.returncode, exc.output)
+        else:
+            print("Output: \n{}\n".format(output))
 
     # Aggregate results
     inference_files = [f'{args.local_directory}/{feature_id}.nc'
