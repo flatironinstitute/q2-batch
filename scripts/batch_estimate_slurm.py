@@ -132,7 +132,4 @@ if __name__ == '__main__':
     coords={'features' : counts.columns,
             'monte_carlo_samples' : np.arange(args.monte_carlo_samples)}
     samples = merge_inferences(inf_list, 'y_predict', 'log_lhood', coords)
-    os.mkdir(args.output_directory)
-    posterior_file = os.path.join(args.output_directory,
-                                  'differential_posterior.nc')
-    samples.to_netcdf(posterior_file)
+    samples.to_netcdf(args.output_tensor)
