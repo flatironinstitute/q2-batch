@@ -9,6 +9,7 @@ import time
 import logging
 import subprocess, os
 import tempfile
+import arviz as az
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 
@@ -23,8 +24,6 @@ if __name__ == '__main__':
     parser.add_argument(
         '--replicates', help='Column specifying replicates.', required=True)
     parser.add_argument(
-        '--feature-id', help='Feature to analyze.', required=True)
-    parser.add_argument(
         '--mu-scale', help='Scale of differentials.',
         type=float, required=False, default=10)
     parser.add_argument(
@@ -37,16 +36,23 @@ if __name__ == '__main__':
         '--monte-carlo-samples', help='Number of monte carlo samples.',
         type=int, required=False, default=1000)
     parser.add_argument(
+        '--chains', help='Number of MCMC chains.', type=int,
+        required=False, default=4)
+    parser.add_argument(
         '--local-directory',
         help=('Scratch directory to deposit logs '
               'and intermediate files.'),
         type=str, required=False, default='/scratch')
     parser.add_argument(
+        '--job-extra',
+        help=('Additional job arguments, like loading modules.'),
+        type=str, required=False)
+    parser.add_argument(
         '--output-inference', help='Output inference tensor.',
         type=str, required=True)
 
     args = parser.parse_args()
-
+    print(args)
     table = load_table(args.biom_table)
     counts = pd.DataFrame(np.array(table.matrix_data.todense()).T,
                           index=table.ids(),
@@ -58,37 +64,45 @@ if __name__ == '__main__':
     idx = list(set(counts.index) & set(replicates.index) & set(batches.index))
     counts, replicates, batches = [x.loc[idx] for x in
                                    (counts, replicates, batches)]
+    if args.reference_loc is None:
+        # Dirichilet-like prior
+        reference_loc = np.log(1 / counts.shape[1])
+    else:
+        reference_loc = args.reference_loc
+
     # Launch disbatch
     ## First create a temporary file with all of the tasks
-    tf = tempfile.NamedTemporaryFile()
-    task_name = tf.name
-    with open(task_name, 'w') as f:
-        for feature_id in counts.columns:
-            cmd_ = (
-                'batch_estimate_single.py '
-                f'--biom-table {args.biom_table} '
-                f'--metadata-file {args.metadata.file} '
-                f'--batches {args.batches} '
-                f'--replicates {args.replicates} '
-                f'--feature-id {feature_id} '
-                f'--mu-scale {args.mu_scale} '
-                f'--reference-loc {args.reference_loc} '
-                f'--reference-scale {args.reference_scale} '
-                f'--monte-carlo-samples {args.monte_carlo_samples} '
-                f'--output-tensor {args.local_directory}/{feature_id.nc}'
-                # slurm logs
-                f' &> {args.local_directory}/{feature_id}.log\n'
-            )
-            f.write(cmd_)
+    with tempfile.TemporaryDirectory() as temp_dir_name:
+        print(temp_dir_name)
+        task_fp = os.path.join(temp_dir_name, 'tasks.txt')
+        print(task_fp)
+        with open(task_fp, 'w') as fh:
+            for feature_id in counts.columns:
+                cmd_ = ('batch_estimate_single.py '
+                        f'--biom-table {args.biom_table} '
+                        f'--metadata-file {args.metadata_file} '
+                        f'--batches {args.batches} '
+                        f'--replicates {args.replicates} '
+                        f'--feature-id {feature_id} '
+                        f'--mu-scale {args.mu_scale} '
+                        f'--reference-loc {reference_loc} '
+                        f'--reference-scale {args.reference_scale} '
+                        f'--monte-carlo-samples {args.monte_carlo_samples} '
+                        f'--chains {args.chains} '
+                        f'--output-tensor {args.local_directory}/{feature_id}.nc'
+                        # slurm logs
+                        f' &> {args.local_directory}/{feature_id}.log\n')
+                print(cmd_)
+                fh.write(cmd_)
+        ## Run disBatch with the SLURM environmental parameters
+        cmd = f'disBatch {task_fp}'
+        cmd = f'{args.job_extra}; {cmd}'
+        slurm_env = os.environ.copy()
+        print(cmd)
+        subprocess.run(cmd, env=slurm_env, check=True, shell=True)
 
-    ## Run disBatch with the SLURM environmental parameters
-    cmd = f'disBatch {task_name}'
-    slurm_env = os.environ.copy()
-    proc = subprocess.Popen(cmd, env=slurm_env)
-    proc.wait()
-
-    ## Aggregate results
-    inference_files = [f'{args.local_directory}/{feature_id.nc}'
+    # Aggregate results
+    inference_files = [f'{args.local_directory}/{feature_id}.nc'
                        for feature_id in counts.columns]
     inf_list = [az.from_netcdf(x) for x in inference_files]
     coords={'features' : counts.columns,

@@ -40,6 +40,9 @@ if __name__ == '__main__':
         '--monte-carlo-samples', help='Number of monte carlo samples.',
         type=int, required=False, default=1000)
     parser.add_argument(
+        '--chains', help='Number of MCMC chains.', type=int,
+        required=False, default=4)
+    parser.add_argument(
         '--output-tensor', help='Output tensor.', type=str, required=True)
 
     args = parser.parse_args()
@@ -64,7 +67,7 @@ if __name__ == '__main__':
     else:
         reference_loc = args.reference_loc
 
-    x = counts.loc[args.feature_id]
+    x = counts[args.feature_id]
     samples = _batch_func(x, replicates, batches,
                           depth, args.monte_carlo_samples,
                           chains=args.chains,
