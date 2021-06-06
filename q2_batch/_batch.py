@@ -104,7 +104,7 @@ def _batch_func(counts : np.array, replicates : np.array,
         # for recommended parameters for poisson log normal
         fit = sm.sample(data=data_path, iter_sampling=mc_samples,
                         # inits=guess.optimized_params_dict,
-                        chains=chains, iter_warmup=mc_samples // 2,
+                        chains=chains, iter_warmup=mc_samples,
                         adapt_delta = 0.9, max_treedepth = 20)
         fit.diagnose()
         inf = az.from_cmdstanpy(fit,

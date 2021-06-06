@@ -40,6 +40,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '--cores', help='Number of cores per process.', type=int, required=False, default=1)
     parser.add_argument(
+        '--chunksize', help='Number of features per process.', type=int,
+        required=False, default=10)
+    parser.add_argument(
         '--chains', help='Number of MCMC chains.', type=int, required=False, default=5)
     parser.add_argument(
         '--processes', help='Number of processes per node.', type=int, required=False, default=1)
@@ -85,7 +88,9 @@ if __name__ == '__main__':
     print(client)
     client.wait_for_workers(args.nodes)
     time.sleep(60)
-    print(cluster.scheduler.workers)
+
+    print(client.get_versions(check=True))
+
     table = load_table(args.biom_table)
     counts = pd.DataFrame(np.array(table.matrix_data.todense()).T,
                           index=table.ids(),
@@ -113,7 +118,7 @@ if __name__ == '__main__':
                                   reference_loc=reference_loc,
                                   reference_scale=args.reference_scale)
 
-    dcounts = da.from_array(counts.values.T, chunks=(counts.T.shape))
+    dcounts = da.from_array(counts.values.T, chunks=(args.chunksize, -1))
 
     res = []
     for d in range(dcounts.shape[0]):
