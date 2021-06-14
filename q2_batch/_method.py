@@ -5,7 +5,6 @@ import pandas as pd
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 import pickle
-import pystan
 import dask
 from q2_batch._batch import _batch_func, merge_inferences
 import arviz as az

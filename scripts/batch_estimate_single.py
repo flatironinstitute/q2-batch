@@ -26,7 +26,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--replicates', help='Column specifying replicates.', required=True)
     parser.add_argument(
-        '--feature-id', help='Feature to analyze.', required=True)
+        '--feature-id', help='Feature to analyze.', type=str, required=True)
     parser.add_argument(
         '--mu-scale', help='Scale of differentials.',
         type=float, required=False, default=10)
