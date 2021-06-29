@@ -28,7 +28,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--feature-id', help='Feature to analyze.', type=str, required=True)
     parser.add_argument(
-        '--mu-scale', help='Scale of differentials.',
+        '--sigma-scale', help='Scale of batch random intercepts.',
         type=float, required=False, default=10)
     parser.add_argument(
         '--reference-loc', help='Center of control log proportions.',
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     samples = _batch_func(x, replicates, batches,
                           depth, args.monte_carlo_samples,
                           chains=args.chains,
-                          mu_scale=args.mu_scale,
+                          sigma_scale=args.sigma_scale,
                           reference_loc=reference_loc,
                           reference_scale=args.reference_scale)
 

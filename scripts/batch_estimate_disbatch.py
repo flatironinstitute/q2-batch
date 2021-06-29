@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--replicates', help='Column specifying replicates.', required=True)
     parser.add_argument(
-        '--mu-scale', help='Scale of differentials.',
+        '--sigma-scale', help='Scale of batch random intercepts.',
         type=float, required=False, default=10)
     parser.add_argument(
         '--reference-loc', help='Center of control log proportions.',
@@ -84,7 +84,7 @@ if __name__ == '__main__':
                         f'--batches {args.batches} '
                         f'--replicates {args.replicates} '
                         f'--feature-id {feature_id} '
-                        f'--mu-scale {args.mu_scale} '
+                        f'--sigma-scale {args.sigma_scale} '
                         f'--reference-loc {reference_loc} '
                         f'--reference-scale {args.reference_scale} '
                         f'--monte-carlo-samples {args.monte_carlo_samples} '
