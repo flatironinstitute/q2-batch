@@ -39,9 +39,13 @@ plugin.methods.register_function(
     parameter_descriptions={
         'batches': ('Specifies the batch ids'),
         'replicates': ('Specifies the technical replicates.'),
-        'cores': 'Number of cpu cores'
+        'monte_carlo_samples': (
+            'Number of monte carlo samples to draw from '
+            'posterior distribution.'
+        ),
+        'cores' : 'Number of cpu cores'
     },
-    name='Batch effect estimation',
-    description=("Computes batch effects from technical replicates."),
+    name='estimation',
+    description=("Computes batch effects from technical replicates"),
     citations=[]
 )

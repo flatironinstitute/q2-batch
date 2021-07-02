@@ -36,7 +36,6 @@ setup(name='q2-batch',
           'pandas',
           'xarray',
           'matplotlib',
-          'q2-types',
           'cmdstanpy==0.9.68',
           'dask',
           # 'dask_jobsqueue', # optional

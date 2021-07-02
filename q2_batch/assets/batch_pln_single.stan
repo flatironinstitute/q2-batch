@@ -6,30 +6,28 @@ data {
   int<lower=0> y[N];                   // observed microbe abundances
   int<lower=1, upper=R> ref_ids[N];    // locations of reference replicates
   int<lower=1, upper=B> batch_ids[N];  // batch ids
-  // Priors
-  real mu_scale;
   real sigma_scale;
   real disp_scale;
   real reference_loc;
   real reference_scale;
+
 }
 
 parameters {
-  vector[B] batch;           // random effects for each batch
-  vector[R] reference;       // reference replicates
-  real mu;                   // mean of batch random effects
-  real<lower=0.0> sigma;     // variance of batch random effects
-  real<lower=0.0> disp;      // per microbe dispersion
+  vector[B] batch;             // random effects for each batch
+  vector<upper=0>[R] reference;// reference replicates
+  real<lower=0.0> sigma;       // variance of batch random effects
+  real<lower=0.0> disp;        // per microbe dispersion
   vector[N] lam;
 }
 
 model {
   vector[N] eta;
   // setting priors ...
-  disp ~ normal(0., disp_scale);            // weak overdispersion prior
-  mu ~ normal(0., mu_scale);                // uninformed batch effects mean prior
-  sigma ~ normal(0., sigma_scale);          // weak batch effects variance prior
-  batch ~ normal(mu, sigma);                // random effects
+  disp ~ normal(0., disp_scale);   // weak overdispersion prior
+  sigma ~ normal(0., sigma_scale); // strong batch effects variance prior
+  batch ~ normal(0, sigma);        // random effects
+
   // uninformed reference prior
   reference ~ normal(reference_loc, reference_scale);
   // generating counts
