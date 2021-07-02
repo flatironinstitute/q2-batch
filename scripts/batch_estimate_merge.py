@@ -27,14 +27,23 @@ if __name__ == '__main__':
         '--monte-carlo-samples', help='Number of monte carlo samples.',
         type=int, required=False, default=1000)
     parser.add_argument(
+        '--only-sigma', help='Only focus on sigma.',
+        default=False, dest='only_sigma',
+        action='store_true')
+    parser.add_argument(
         '--output-inference', help='Merged inference file.', type=str, required=True)
-
     args = parser.parse_args()
+    print('Only store sigma', args.only_sigma)
     # A little redundant, but necessary for getting ids
-    names = [x.split('.nc')[0] for x in args.inference_files]
+    names = [x.split('.nc')[0].split('/')[-1] for x in args.inference_files]
     inf_list = [az.from_netcdf(x) for x in args.inference_files]
-    coords={'features' : names,
-            'monte_carlo_samples' : np.arange(args.monte_carlo_samples)}
-    samples = merge_inferences(inf_list, 'y_predict', 'log_lhood', coords)
-
-    samples.to_netcdf(args.output_inference)
+    if args.only_sigma:
+        sigmas = [inf['posterior']['sigma'] for inf in inf_list]
+        samples = xr.concat(sigmas, 'features')
+        samples = samples.assign_coords({'features' : names})
+        samples.to_netcdf(args.output_inference)
+    else:
+        coords={'features' : names,
+                'monte_carlo_samples' : np.arange(args.monte_carlo_samples)}
+        samples = merge_inferences(inf_list, 'y_predict', 'log_lhood', coords)
+        samples.to_netcdf(args.output_inference)
