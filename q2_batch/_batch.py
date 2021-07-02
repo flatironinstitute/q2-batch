@@ -1,10 +1,7 @@
-import argparse
-from biom import load_table
+import biom
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
-import pickle
 import os
 from skbio.stats.composition import ilr_inv
 import matplotlib.pyplot as plt
@@ -60,6 +57,7 @@ def _batch_func(counts : np.array, replicates : np.array,
                 sigma_scale : float=10,
                 reference_loc : float=0,
                 reference_scale : float=10) -> dict:
+
     replicate_encoder = LabelEncoder()
     replicate_encoder.fit(replicates)
     replicate_ids = replicate_encoder.transform(replicates)
@@ -74,9 +72,7 @@ def _batch_func(counts : np.array, replicates : np.array,
     batch_encoder = LabelEncoder()
     batch_encoder.fit(batches)
     batch_ids = batch_encoder.transform(batches)
-    # Actual stan modeling
-    code = os.path.join(os.path.dirname(__file__),
-                        'assets/batch_pln_single.stan')
+
     batch_ids = batch_ids.astype(np.int64) + 1
     ref_ids = ref_ids.astype(np.int64) + 1
     sm = CmdStanModel(stan_file=code)
@@ -112,6 +108,7 @@ def _batch_func(counts : np.array, replicates : np.array,
                                 log_likelihood='log_lhood',
         )
         return inf
+
 
 
 def _simulate(n=100, d=10, depth=50):

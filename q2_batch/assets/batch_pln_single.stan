@@ -1,9 +1,9 @@
 data {
-  int<lower=0> N;    // number of samples
-  int<lower=0> R;    // number of replicates
-  int<lower=0> B;    // number of batchs
-  real depth[N];     // sequencing depths of microbes
-  int<lower=0> y[N];          // observed microbe abundances
+  int<lower=0> N;                      // number of samples
+  int<lower=0> R;                      // number of replicates
+  int<lower=0> B;                      // number of batchs
+  real depth[N];                       // sequencing depths of microbes
+  int<lower=0> y[N];                   // observed microbe abundances
   int<lower=1, upper=R> ref_ids[N];    // locations of reference replicates
   int<lower=1, upper=B> batch_ids[N];  // batch ids
   real sigma_scale;
@@ -27,6 +27,7 @@ model {
   disp ~ normal(0., disp_scale);   // weak overdispersion prior
   sigma ~ normal(0., sigma_scale); // strong batch effects variance prior
   batch ~ normal(0, sigma);        // random effects
+
   // uninformed reference prior
   reference ~ normal(reference_loc, reference_scale);
   // generating counts

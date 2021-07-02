@@ -1,8 +1,6 @@
-import importlib
 import qiime2.plugin
 import qiime2.sdk
-from qiime2.plugin import (Str, Properties, Int, Float,  Metadata, Bool,
-                           MetadataColumn, Categorical)
+from qiime2.plugin import Int, MetadataColumn, Categorical
 
 from q2_batch import __version__
 from q2_batch._method import estimate
@@ -20,13 +18,13 @@ plugin = qiime2.plugin.Plugin(
                  ' for downstream plugins'),
     package='q2-batch')
 
+
 plugin.methods.register_function(
     function=estimate,
     inputs={'counts': FeatureTable[Frequency]},
     parameters={
         'batches': MetadataColumn[Categorical],
         'replicates': MetadataColumn[Categorical],
-        'monte_carlo_samples': Int,
         'cores': Int
     },
     outputs=[

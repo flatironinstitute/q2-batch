@@ -1,6 +1,4 @@
-import argparse
-from biom import load_table
-import numpy as np
+import biom
 import pandas as pd
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
@@ -44,5 +42,6 @@ def estimate(counts : pd.DataFrame,
             'monte_carlo_samples' : np.arange(args.monte_carlo_samples)}
 
     samples = merge_inferences(inf_list, 'y_predict', 'log_lhood', coords)
+
 
     return samples

@@ -1,8 +1,10 @@
 import unittest
-from q2_batch._batch import _batch_func, _simulate
+from q2_batch._batch import _simulate, PoissonLogNormalBatch
+from dask.distributed import Client, LocalCluster
+import biom
 
 
-class TestBatch(unittest.TestCase):
+class TestPoissonLogNormalBatch(unittest.TestCase):
 
     def setUp(self):
         self.table, self.metadata = _simulate(n=100, d=10, depth=50)

@@ -1,15 +1,12 @@
-import qiime2
 import argparse
 from dask_jobqueue import SLURMCluster
 from dask.distributed import Client
-import dask
-import dask.dataframe as dd
-import dask.array as da
 from biom import load_table
 import pandas as pd
 import numpy as np
 import xarray as xr
 from q2_batch._batch import _batch_func, merge_inferences
+
 import time
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
@@ -133,3 +130,4 @@ if __name__ == '__main__':
             'monte_carlo_samples' : np.arange(args.monte_carlo_samples)}
     samples = merge_inferences(inf_list, 'y_predict', 'log_lhood', coords)
     samples.to_netcdf(args.output_tensor)
+
