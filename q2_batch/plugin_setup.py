@@ -25,7 +25,8 @@ plugin.methods.register_function(
     parameters={
         'batches': MetadataColumn[Categorical],
         'replicates': MetadataColumn[Categorical],
-        'cores': Int
+        'monte_carlo_samples': Int,
+        'cores': Int,
     },
     outputs=[
         ('posterior', MonteCarloTensor)
