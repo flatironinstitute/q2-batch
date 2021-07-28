@@ -15,25 +15,32 @@ data {
 
 parameters {
   vector[B] batch;             // random effects for each batch
-  vector<upper=0>[R] reference;// reference replicates
+  vector[R] reference;         // reference replicates
   real<lower=0.0> sigma;       // variance of batch random effects
   real<lower=0.0> disp;        // per microbe dispersion
   vector[N] lam;
 }
 
+transformed parameters{
+  vector[C] logit_ref;
+  vector[N] eta;
+  logit_ref = log(inv_logit(reference));
+  for (n in 1:N) {
+    eta[n] = batch[batch_ids[n]] + logit_ref[ref_ids[n]];
+  }
+}
+
 model {
   vector[N] eta;
   // setting priors ...
-  disp ~ normal(0., disp_scale);   // weak overdispersion prior
-  sigma ~ normal(0., sigma_scale); // strong batch effects variance prior
-  batch ~ normal(0, sigma);        // random effects
-
+  disp ~ lognormal(0., disp_scale);   // weak overdispersion prior
+  sigma ~ lognormal(0., sigma_scale); // strong batch effects variance prior
+  batch ~ normal(0, sigma);           // random effects
   // uninformed reference prior
-  reference ~ normal(reference_loc, reference_scale);
-  // generating counts
-  for (n in 1:N){
-    eta[n] = batch[batch_ids[n]] + reference[ref_ids[n]];
-  }
+  ref_mu ~ normal(reference_loc, 5);
+  ref_sigma ~ lognormal(0, reference_scale);
+  reference ~ normal(ref_mu, ref_sigma);
+  // sample logits and counts
   lam ~ normal(eta, disp);
   y ~ poisson_log(lam + to_vector(depth));
 }
@@ -42,8 +49,7 @@ generated quantities {
   vector[N] y_predict;
   vector[N] log_lhood;
   for (n in 1:N){
-    real eta_ = batch[batch_ids[n]] + reference[ref_ids[n]];
-    real lam_ = normal_rng(eta_, disp);
+    real lam_ = normal_rng(eta, disp);
     y_predict[n] = poisson_log_rng(lam_ + depth[n]);
     log_lhood[n] = poisson_log_lpmf(y[n] | lam_ + depth[n]);
   }

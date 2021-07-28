@@ -54,9 +54,9 @@ def merge_inferences(inf_list, log_likelihood, posterior_predictive,
 def _batch_func(counts : np.array, replicates : np.array,
                 batches : np.array, depth : int,
                 mc_samples : int=1000, chains : int=4,
-                sigma_scale : float=10,
-                reference_loc : float=0,
-                reference_scale : float=10) -> dict:
+                sigma_scale : float=1,
+                reference_loc : float=-5,
+                reference_scale : float=5) -> dict:
 
     replicate_encoder = LabelEncoder()
     replicate_encoder.fit(replicates)
