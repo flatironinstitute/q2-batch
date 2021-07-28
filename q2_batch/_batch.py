@@ -75,6 +75,8 @@ def _batch_func(counts : np.array, replicates : np.array,
 
     batch_ids = batch_ids.astype(np.int64) + 1
     ref_ids = ref_ids.astype(np.int64) + 1
+    code = os.path.join(os.path.dirname(__file__),
+                        'assets/batch_pln_single.stan')
     sm = CmdStanModel(stan_file=code)
     dat = {
         'N' : counts.shape[0],
@@ -100,7 +102,7 @@ def _batch_func(counts : np.array, replicates : np.array,
         # for recommended parameters for poisson log normal
         fit = sm.sample(data=data_path, iter_sampling=mc_samples,
                         # inits=guess.optimized_params_dict,
-                        chains=chains, iter_warmup=mc_samples,
+                        chains=chains, iter_warmup=1000,
                         adapt_delta = 0.9, max_treedepth = 20)
         fit.diagnose()
         inf = az.from_cmdstanpy(fit,

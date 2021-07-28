@@ -15,14 +15,16 @@ data {
 
 parameters {
   vector[B] batch;             // random effects for each batch
-  vector[R] reference;         // reference replicates
+  vector<upper=0.0>[R] reference;         // reference replicates
   real<lower=0.0> sigma;       // variance of batch random effects
   real<lower=0.0> disp;        // per microbe dispersion
+  real ref_mu;
+  real ref_sigma;
   vector[N] lam;
 }
 
 transformed parameters{
-  vector[C] logit_ref;
+  vector[R] logit_ref;
   vector[N] eta;
   logit_ref = log(inv_logit(reference));
   for (n in 1:N) {
@@ -31,7 +33,6 @@ transformed parameters{
 }
 
 model {
-  vector[N] eta;
   // setting priors ...
   disp ~ lognormal(0., disp_scale);   // weak overdispersion prior
   sigma ~ lognormal(0., sigma_scale); // strong batch effects variance prior
@@ -49,7 +50,7 @@ generated quantities {
   vector[N] y_predict;
   vector[N] log_lhood;
   for (n in 1:N){
-    real lam_ = normal_rng(eta, disp);
+    real lam_ = normal_rng(eta[n], disp);
     y_predict[n] = poisson_log_rng(lam_ + depth[n]);
     log_lhood[n] = poisson_log_lpmf(y[n] | lam_ + depth[n]);
   }
