@@ -54,6 +54,7 @@ def merge_inferences(inf_list, log_likelihood, posterior_predictive,
 def _batch_func(counts : np.array, replicates : np.array,
                 batches : np.array, depth : int,
                 mc_samples : int=1000, chains : int=4,
+                disp_scale : float=1,
                 sigma_scale : float=1,
                 reference_loc : float=-5,
                 reference_scale : float=5) -> dict:
@@ -86,9 +87,8 @@ def _batch_func(counts : np.array, replicates : np.array,
         'y' : list(map(int, counts.astype(np.int64))),
         'ref_ids' : list(map(int, ref_ids)),
         'batch_ids' : list(map(int, batch_ids)),
-        # 'mu_scale' : mu_scale,
         'sigma_scale' : sigma_scale,
-        'disp_scale' : 1,
+        'disp_scale' : disp_scale,
         'reference_loc' : reference_loc,
         'reference_scale' : reference_scale
     }

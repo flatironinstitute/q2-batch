@@ -26,7 +26,7 @@ parameters {
 transformed parameters{
   vector[R] logit_ref;
   vector[N] eta;
-  logit_ref = log(inv_logit(reference));
+  logit_ref = log_inv_logit(reference);
   for (n in 1:N) {
     eta[n] = batch[batch_ids[n]] + logit_ref[ref_ids[n]];
   }
@@ -38,7 +38,7 @@ model {
   sigma ~ lognormal(0., sigma_scale); // strong batch effects variance prior
   batch ~ normal(0, sigma);           // random effects
   // uninformed reference prior
-  ref_mu ~ normal(reference_loc, 5);
+  ref_mu ~ normal(reference_loc, 3);
   ref_sigma ~ lognormal(0, reference_scale);
   reference ~ normal(ref_mu, ref_sigma);
   // sample logits and counts
