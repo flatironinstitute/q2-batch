@@ -25,13 +25,16 @@ if __name__ == '__main__':
         '--replicates', help='Column specifying replicates.', required=True)
     parser.add_argument(
         '--sigma-scale', help='Scale of batch random intercepts.',
-        type=float, required=False, default=10)
+        type=float, required=False, default=1)
+    parser.add_argument(
+        '--disp-scale', help='Scale of dispersion.',
+        type=float, required=False, default=1)
     parser.add_argument(
         '--reference-loc', help='Center of control log proportions.',
         type=float, required=False, default=None)
     parser.add_argument(
         '--reference-scale', help='Scale of control log proportions.',
-        type=float, required=False, default=10)
+        type=float, required=False, default=1)
     parser.add_argument(
         '--monte-carlo-samples', help='Number of monte carlo samples.',
         type=int, required=False, default=1000)
@@ -43,6 +46,11 @@ if __name__ == '__main__':
         help=('Scratch directory to deposit logs '
               'and intermediate files.'),
         type=str, required=False, default='/scratch')
+    parser.add_argument(
+        '--no-overwrite',
+        help='Do not overwrite existing intermediate files.',
+        required=False, dest='overwrite', action='store_false')
+    parser.set_defaults(overwrite=True)
     parser.add_argument(
         '--job-extra',
         help=('Additional job arguments, like loading modules.'),
@@ -78,6 +86,9 @@ if __name__ == '__main__':
         print(task_fp)
         with open(task_fp, 'w') as fh:
             for feature_id in counts.columns:
+                out_fname = f'{args.local_directory}/{feature_id}.nc'
+                if os.path.exists(out_fname) and not args.overwrite:
+                    continue
                 cmd_ = ('batch_estimate_single.py '
                         f'--biom-table {args.biom_table} '
                         f'--metadata-file {args.metadata_file} '
@@ -85,6 +96,7 @@ if __name__ == '__main__':
                         f'--replicates {args.replicates} '
                         f'--feature-id {feature_id} '
                         f'--sigma-scale {args.sigma_scale} '
+                        f'--disp-scale {args.disp_scale} '
                         f'--reference-loc {reference_loc} '
                         f'--reference-scale {args.reference_scale} '
                         f'--monte-carlo-samples {args.monte_carlo_samples} '

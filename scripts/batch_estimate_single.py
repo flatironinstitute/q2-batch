@@ -29,13 +29,16 @@ if __name__ == '__main__':
         '--feature-id', help='Feature to analyze.', type=str, required=True)
     parser.add_argument(
         '--sigma-scale', help='Scale of batch random intercepts.',
-        type=float, required=False, default=10)
+        type=float, required=False, default=1)
+    parser.add_argument(
+        '--disp-scale', help='Scale of dispersion.',
+        type=float, required=False, default=1)
     parser.add_argument(
         '--reference-loc', help='Center of control log proportions.',
         type=float, required=False, default=None)
     parser.add_argument(
         '--reference-scale', help='Scale of control log proportions.',
-        type=float, required=False, default=10)
+        type=float, required=False, default=1)
     parser.add_argument(
         '--monte-carlo-samples', help='Number of monte carlo samples.',
         type=int, required=False, default=1000)
@@ -72,6 +75,7 @@ if __name__ == '__main__':
                           depth, args.monte_carlo_samples,
                           chains=args.chains,
                           sigma_scale=args.sigma_scale,
+                          disp_scale=args.disp_scale,
                           reference_loc=reference_loc,
                           reference_scale=args.reference_scale)
 

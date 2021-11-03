@@ -54,9 +54,10 @@ def merge_inferences(inf_list, log_likelihood, posterior_predictive,
 def _batch_func(counts : np.array, replicates : np.array,
                 batches : np.array, depth : int,
                 mc_samples : int=1000, chains : int=4,
-                sigma_scale : float=10,
-                reference_loc : float=0,
-                reference_scale : float=10) -> dict:
+                disp_scale : float=1,
+                sigma_scale : float=1,
+                reference_loc : float=-5,
+                reference_scale : float=5) -> dict:
 
     replicate_encoder = LabelEncoder()
     replicate_encoder.fit(replicates)
@@ -75,6 +76,8 @@ def _batch_func(counts : np.array, replicates : np.array,
 
     batch_ids = batch_ids.astype(np.int64) + 1
     ref_ids = ref_ids.astype(np.int64) + 1
+    code = os.path.join(os.path.dirname(__file__),
+                        'assets/batch_pln_single.stan')
     sm = CmdStanModel(stan_file=code)
     dat = {
         'N' : counts.shape[0],
@@ -84,9 +87,8 @@ def _batch_func(counts : np.array, replicates : np.array,
         'y' : list(map(int, counts.astype(np.int64))),
         'ref_ids' : list(map(int, ref_ids)),
         'batch_ids' : list(map(int, batch_ids)),
-        # 'mu_scale' : mu_scale,
         'sigma_scale' : sigma_scale,
-        'disp_scale' : 1,
+        'disp_scale' : disp_scale,
         'reference_loc' : reference_loc,
         'reference_scale' : reference_scale
     }
@@ -100,7 +102,7 @@ def _batch_func(counts : np.array, replicates : np.array,
         # for recommended parameters for poisson log normal
         fit = sm.sample(data=data_path, iter_sampling=mc_samples,
                         # inits=guess.optimized_params_dict,
-                        chains=chains, iter_warmup=mc_samples,
+                        chains=chains, iter_warmup=1000,
                         adapt_delta = 0.9, max_treedepth = 20)
         fit.diagnose()
         inf = az.from_cmdstanpy(fit,
