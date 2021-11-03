@@ -119,9 +119,31 @@ if __name__ == '__main__':
             print("Output: \n{}\n".format(output))
 
     # Aggregate results
-    inference_files = [f'{args.local_directory}/{feature_id}.nc'
-                       for feature_id in counts.columns]
-    inf_list = [az.from_netcdf(x) for x in inference_files]
+    inf_list = []
+    throw_err = False
+    for feature_id in counts.columns:
+        inference_file = f'{args.intermediate_directory}/{feature_id}.nc'
+        inf = az.from_netcdf(inference_file)
+        if hasattr(inf, 'sample_stats'):
+            inf_list.append(inf)
+        else:
+            os.remove(inference_file)
+            throw_err = True
+            print(inference_file, 'has no `sample_stats`, removing ...')
+
+        # delete useless variables
+        if hasattr(inf['posterior'], 'lam'):
+            del inf['posterior']['lam']
+        if hasattr(inf['posterior'], 'eta'):
+            del inf['posterior']['eta']
+        if hasattr(inf['posterior'], 'reference'):
+            del inf['posterior']['reference']
+p
+    if throw_err:
+        raise ValueError('Inference files have no `sample_stats`. '
+                         'Those files have been removed, so please rerun with '
+                         '`--no-overwrite`')
+
     coords={'features' : counts.columns,
             'monte_carlo_samples' : np.arange(args.monte_carlo_samples)}
     samples = merge_inferences(inf_list, 'y_predict', 'log_lhood', coords)

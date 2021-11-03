@@ -36,7 +36,17 @@ if __name__ == '__main__':
     print('Only store sigma', args.only_sigma)
     # A little redundant, but necessary for getting ids
     names = [x.split('.nc')[0].split('/')[-1] for x in args.inference_files]
-    inf_list = [az.from_netcdf(x) for x in args.inference_files]
+    inf_list = []
+    for x in args.inference_files:
+        inf = az.from_netcdf(x)
+        # delete useless variables
+        if hasattr(inf['posterior'], 'lam'):
+            del inf['posterior']['lam']
+        if hasattr(inf['posterior'], 'eta'):
+            del inf['posterior']['eta']
+        if hasattr(inf['posterior'], 'reference'):
+            del inf['posterior']['reference']
+p       inf_list.append(inf)
     if args.only_sigma:
         sigmas = [inf['posterior']['sigma'] for inf in inf_list]
         samples = xr.concat(sigmas, 'features')
