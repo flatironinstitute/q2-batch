@@ -102,11 +102,19 @@ def _batch_func(counts : np.array, replicates : np.array,
                         # inits=guess.optimized_params_dict,
                         chains=chains, iter_warmup=mc_samples,
                         adapt_delta = 0.9, max_treedepth = 20)
-        fit.diagnose()
+        # fit.diagnose()
         inf = az.from_cmdstanpy(fit,
                                 posterior_predictive='y_predict',
                                 log_likelihood='log_lhood',
         )
+        # delete useless variables
+        if hasattr(inf['posterior'], 'lam'):
+            del inf['posterior']['lam']
+        if hasattr(inf['posterior'], 'eta'):
+            del inf['posterior']['eta']
+        if hasattr(inf['posterior'], 'reference'):
+            del inf['posterior']['reference']
+
         return inf
 
 
